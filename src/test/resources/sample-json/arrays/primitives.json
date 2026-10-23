@@ -1,0 +1,5 @@
+{
+  "tags": ["prod", "critical", "api"],
+  "scores": [42, -3.14, 0, 1e10],
+  "flags": [true, false, true]
+}

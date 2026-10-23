@@ -1,0 +1,8 @@
+{
+  "explicitNull": null,
+  "emptyObject": {},
+  "emptyArray": [],
+  "explicitEmptyString": "",
+  "explicitZero": 0,
+  "explicitFalse": false
+}

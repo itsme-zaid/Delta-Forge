@@ -1,0 +1,9 @@
+{
+  "user/name": "alice",
+  "user~settings": {"theme": "dark"},
+  "": "empty key",
+  "with spaces": "yes",
+  "with\"quotes\"": "yes",
+  "emoji😀": "yes",
+  "日本語": "yes"
+}

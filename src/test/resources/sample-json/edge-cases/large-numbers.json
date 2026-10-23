@@ -1,0 +1,12 @@
+{
+  "safeInt": 2147483647,
+  "justOverInt": 2147483648,
+  "longMax": 9223372036854775807,
+  "overLong": 9223372036854775808,
+  "arbitraryPrecision": 123456789012345678901234567890,
+  "negativeZero": -0,
+  "smallDecimal": 0.1,
+  "repeatingDecimal": 0.3333333333333333333,
+  "scientificPositive": 1e100,
+  "scientificNegative": 1e-100
+}
