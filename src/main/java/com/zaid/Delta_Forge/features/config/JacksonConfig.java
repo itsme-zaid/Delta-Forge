@@ -10,35 +10,27 @@ import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.boot.jackson.autoconfigure.JsonMapperBuilderCustomizer;
 
 import tools.jackson.core.StreamReadConstraints;
+import tools.jackson.core.StreamReadFeature;
 import tools.jackson.core.json.JsonFactory;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.cfg.JsonNodeFeature;
 import tools.jackson.databind.json.JsonMapper;
 
 @Configuration
 public class JacksonConfig {
 
     @Bean
-    @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-    JsonMapper.Builder jsonMapperBuilder(
-            List<JsonMapperBuilderCustomizer> customizers,
-            JsonLimitProperties limits
-    ) {
-        var constraints = StreamReadConstraints.builder()
-                .maxDocumentLength(limits.maxDocumentBytes())
-                .maxNestingDepth(limits.maxNestingDepth())
-                .maxNumberLength(limits.maxNumberLength())
-                .maxStringLength(limits.maxStringLength())
-                .build();
-
+    JsonMapper jsonMapper() {
         JsonFactory factory = JsonFactory.builder()
-                .streamReadConstraints(constraints)
+                .enable(StreamReadFeature.STRICT_DUPLICATE_DETECTION)
+                .streamReadConstraints(StreamReadConstraints.builder()
+                        .maxNestingDepth(100)
+                        .maxDocumentLength(512 * 1024)
+                        .build())
                 .build();
-
-        JsonMapper.Builder builder = JsonMapper.builder(factory);
-
-        customizers.forEach(customizer ->
-                customizer.customize(builder)
-        );
-
-        return builder;
+        return JsonMapper.builder(factory)
+                .enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS)
+                .disable(JsonNodeFeature.STRIP_TRAILING_BIGDECIMAL_ZEROES)
+                .build();
     }
 }
