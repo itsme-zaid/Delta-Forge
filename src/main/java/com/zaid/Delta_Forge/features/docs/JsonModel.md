@@ -120,3 +120,6 @@ a specific decision or edge case:
 - [ ] Implemented in `JsonDocumentService` (Day 4)
 - [ ] Enforced by tests (Day 4)
 - [ ] Enforced by canonicalization (Day 15)
+
+
+- <B>setAt policy:</B> Creates missing object parents recursively. Does not create missing array elements; array indices must be within bounds. This matches JSON Patch's add behavior for objects and avoids the ambiguity of "how many nulls to insert" for arrays. The Materializer (Day 10) always operates on a deep copy of the merged tree, so mutation is safe.
