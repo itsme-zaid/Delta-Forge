@@ -53,6 +53,10 @@ enforced by the `diff(A, A) == []` property test on Day 11.
 ## The absence of operation will be the representation of equality
 - thats why there would be no "skip or keep" operation
 
+# NOTE:
+<p> <b> Diff operations are at the granularity of JSON nodes. A string, number, or boolean value either changes (one REPLACE) or doesn't (no operation). Character-level or token-level diffing (Myers) is not used in the diff engine's contract because (a) it would require a character-level apply to satisfy apply(diff(A, B), A) == B, and (b) it would diverge from the merge engine's value-level comparison, breaking the "diff and merge agree on what changed" property. Character-level highlighting is a display concern and may be added to DiffFormatter on Day 13 without affecting the operation model. </b></p> 
+
+### we won't be using myers/naive lcs for actual diffing but only as a representation to user about what changed among values;
 
 [//]: # (## Status)
 
