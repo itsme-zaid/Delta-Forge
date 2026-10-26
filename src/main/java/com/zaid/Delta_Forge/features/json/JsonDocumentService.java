@@ -1,5 +1,6 @@
 package com.zaid.Delta_Forge.features.json;
 import org.springframework.stereotype.Service;
+import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -37,5 +38,12 @@ public class JsonDocumentService {
     }
     public JsonNode deepCopy(JsonNode node){
         return node.deepCopy();
+    }
+    public String serialize(JsonNode node) {
+        try {
+            return mapper.writeValueAsString(node);
+        } catch (JacksonException e) {
+            throw new IllegalStateException("Unserializable node", e);
+        }
     }
 }
