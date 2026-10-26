@@ -201,4 +201,38 @@ public class DiffEngineImplTest {
         assertThat(base.toString()).isEqualTo(b);
         assertThat(target.toString()).isEqualTo(t);
     }
+
+    //day 12: array of object behavior
+    @Test
+    void array_of_object_same_size(){
+        JsonNode base = service.parse("{\"user\":[{\"id\":1}]}");
+        JsonNode target = service.parse("{\"user\":[{\"id\":11}]}");
+        List<DiffOperation> ops = diffEngine.diff(base,target);
+        assertThat(ops).hasSize(1);
+        assertThat(ops.getFirst().diffOperationType()).isEqualTo(DiffOperationType.REPLACE);
+    }
+    @Test
+    void array_of_object_array_key_element_added(){
+        JsonNode base = service.parse("{\"user\":[{\"id\":1}]}");
+        JsonNode target = service.parse("{\"user\":[{\"id\":11},{\"id\":121}]}");
+        List<DiffOperation> ops = diffEngine.diff(base,target);
+        assertThat(ops).hasSize(1);
+        assertThat(ops.getFirst().diffOperationType()).isEqualTo(DiffOperationType.REPLACE);
+    }
+    @Test
+    void array_of_object_array_key_element_removed(){
+        JsonNode base = service.parse("{\"user\":[{\"id\":11},{\"id\":121}]}");
+        JsonNode target = service.parse("{\"user\":[{\"id\":1}]}");
+        List<DiffOperation> ops = diffEngine.diff(base,target);
+        assertThat(ops).hasSize(1);
+        assertThat(ops.getFirst().diffOperationType()).isEqualTo(DiffOperationType.REPLACE);
+    }
+    @Test
+    void array_of_object_array_order_changed(){
+        JsonNode base = service.parse("{\"user\":[{\"id\":11},{\"id\":121}]}");
+        JsonNode target = service.parse("{\"user\":[{\"id\":121},{\"id\":11}]}");
+        List<DiffOperation> ops = diffEngine.diff(base,target);
+        assertThat(ops).hasSize(1);
+        assertThat(ops.getFirst().diffOperationType()).isEqualTo(DiffOperationType.REPLACE);
+    }
 }
