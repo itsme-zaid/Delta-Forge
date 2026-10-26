@@ -168,6 +168,16 @@ public class DiffEngineImplTest {
         assertThat(ops.get(0).diffOperationType()).isEqualTo(DiffOperationType.REPLACE);
         assertThat(ops.get(0).path().toString()).isEqualTo("/items");
     }
+
+    @Test
+    void same_array_emits_nothing(){
+        List<DiffOperation> ops = diffEngine.diff(
+                service.parse("{\"items\":[1,2,3]}"),
+                service.parse("{\"items\":[1,2,3]}")
+        );
+        assertThat(ops).hasSize(0);
+    }
+
     @Test
     void same_inputs_produce_same_output_twice() {
         JsonNode base = service.parse("{\"b\":1,\"a\":2,\"c\":3}");
