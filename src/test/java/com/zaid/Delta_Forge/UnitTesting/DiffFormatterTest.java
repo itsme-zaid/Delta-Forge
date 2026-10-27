@@ -33,9 +33,9 @@ public class DiffFormatterTest {
     @Test
     public void check_(){
         List<DiffOperation> ops = diffEngine.diff(
-                service.parse("{\"a\":1,\"b\":22, \"c\":222}"),
-                service.parse("{\"b\":2,\"a\":1}"));
-        System.out.println(formatter.formatJson(ops));
+                service.parse("{\"service\":{\"database\":{\"host\":\"db1\",\"host11\":\"db1\"}}}"),
+                service.parse("{\"service\":{\"database\":{\"host11\":\"db1\",\"host\":\"db1\"}}}"));
+        System.out.println(formatter.formatText(ops));
         assertThat(formatter.formatText(ops)).isNotEmpty();
     }
 

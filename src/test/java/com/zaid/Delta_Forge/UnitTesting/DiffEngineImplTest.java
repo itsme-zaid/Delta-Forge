@@ -108,7 +108,7 @@ public class DiffEngineImplTest {
                 service.parse("{\"service\":{\"database\":{\"host\":\"db2\"}}}"));
 
         assertThat(ops).hasSize(1);
-        assertThat(ops.get(0).path().toString()).isEqualTo("/service/database/host");
+        assertThat(ops.getFirst().path().toString()).isEqualTo("/service/database/host");
     }
     @Test
     void conflict_free_sibling_survives_alongside_changed_sibling() {
