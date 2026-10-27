@@ -17,15 +17,33 @@ public class MergeEngine {
     public MergeEngine(JsonDocumentService jsonService){
         this.jsonService = jsonService;
     }
-    public MergeResult mergePrimitive(JsonPointer path, JsonNode ours, JsonNode theirs, JsonNode base){
-        if(jsonService.structurallyEqual(ours,base)) return new MergeResult.MergeSuccess(ours,theirs,theirs);
-        else if(jsonService.structurallyEqual(theirs,base)) return new MergeResult.MergeSuccess(ours,theirs,ours);
-        else if (jsonService.structurallyEqual(ours,theirs)) return new MergeResult.MergeSuccess(ours,theirs,theirs);
-        else{
-            // for now as of d17 only primitives so only type and modified conflicts
-            if(ours.getNodeType() != theirs.getNodeType()) return new MergeResult.MergeWithConflicts(new MergeConflict(path,ours,theirs,base,ConflictType.TYPE_CHANGED));
+    private boolean equalsSlot(ValueSlot a, ValueSlot b) {
+        return switch (a) {
+            case ValueSlot.Missing() -> b instanceof ValueSlot.Missing;
+            case ValueSlot.Present(JsonNode an) -> b instanceof ValueSlot.Present(JsonNode bn)
+                    && jsonService.structurallyEqual(an, bn);
+        };
+    }
+    public MergeResult mergePrimitive(JsonPointer path,
+                                      ValueSlot ours,
+                                      ValueSlot theirs,
+                                      ValueSlot base) {
+        if (equalsSlot(ours, base))   return MergeResult.success(ours, theirs, theirs);
+        if (equalsSlot(theirs, base)) return MergeResult.success(ours, theirs, ours);
+        if (equalsSlot(ours, theirs)) return MergeResult.success(ours, theirs, theirs);
 
-            return new MergeResult.MergeWithConflicts(new MergeConflict(path,ours,theirs,base,ConflictType.BOTH_MODIFIED));
+        ConflictType kind = determineConflictType(ours, theirs);
+        return MergeResult.conflict(new MergeConflict(path, ours, theirs, base, kind));
+    }
+
+    private ConflictType determineConflictType(ValueSlot ours, ValueSlot theirs) {
+        boolean bothPresent = ours instanceof ValueSlot.Present
+                && theirs instanceof ValueSlot.Present;
+        if (bothPresent) {
+            JsonNode o = ((ValueSlot.Present) ours).node();
+            JsonNode t = ((ValueSlot.Present) theirs).node();
+            if (o.getNodeType() != t.getNodeType()) return ConflictType.TYPE_CHANGED;
         }
+        return ConflictType.BOTH_MODIFIED;
     }
 }

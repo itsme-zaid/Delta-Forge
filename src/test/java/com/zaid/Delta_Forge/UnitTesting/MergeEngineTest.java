@@ -1,6 +1,7 @@
 package com.zaid.Delta_Forge.UnitTesting;
 
 import com.zaid.Delta_Forge.features.json.JsonDocumentService;
+import com.zaid.Delta_Forge.features.json.ValueSlot;
 import com.zaid.Delta_Forge.features.merge.ConflictType;
 import com.zaid.Delta_Forge.features.merge.MergeConflict;
 import com.zaid.Delta_Forge.features.merge.MergeEngine;
@@ -24,9 +25,9 @@ public class MergeEngineTest {
 
     @Test
     public void no_change_emits_merge_success(){
-        ValueNode ours = FloatNode.valueOf(1.0f);
-        ValueNode base = IntNode.valueOf(1);
-        ValueNode theirs = IntNode.valueOf(1);
+        ValueSlot ours = ValueSlot.present(FloatNode.valueOf(1.0f));
+        ValueSlot base = ValueSlot.present(IntNode.valueOf(1));
+        ValueSlot theirs = ValueSlot.present(IntNode.valueOf(1));
 //        assertThat(mergeEngine.mergePrimitive(null,ours,theirs,base);
         MergeResult mergeResult = mergeEngine.mergePrimitive(null,ours,theirs,base);
         assertThat(mergeResult).isInstanceOf(MergeResult.MergeSuccess.class);
@@ -36,9 +37,9 @@ public class MergeEngineTest {
     }
     @Test
     public void ours_only_changed_emits_success(){
-        ValueNode ours = StringNode.valueOf("string2");
-        ValueNode base = StringNode.valueOf("string1");
-        ValueNode theirs = StringNode.valueOf("string1");
+        ValueSlot ours = ValueSlot.present(StringNode.valueOf("string2"));
+        ValueSlot base = ValueSlot.present(StringNode.valueOf("string1"));
+        ValueSlot theirs = ValueSlot.present(StringNode.valueOf("string1"));
         MergeResult mergeResult = mergeEngine.mergePrimitive(null,ours,theirs,base);
         assertThat(mergeResult).isInstanceOf(MergeResult.MergeSuccess.class);
         MergeResult.MergeSuccess success =
@@ -47,9 +48,9 @@ public class MergeEngineTest {
     }
     @Test
     public void theirs_only_changed_emits_success(){
-        ValueNode ours = StringNode.valueOf("string1");
-        ValueNode base = StringNode.valueOf("string1");
-        ValueNode theirs = StringNode.valueOf("string2");
+        ValueSlot ours = ValueSlot.present(StringNode.valueOf("string1"));
+        ValueSlot base = ValueSlot.present(StringNode.valueOf("string1"));
+        ValueSlot theirs = ValueSlot.present(StringNode.valueOf("string2"));
 //        assertThat(mergeEngine.mergePrimitive(null,ours,theirs,base);
         MergeResult mergeResult = mergeEngine.mergePrimitive(null,ours,theirs,base);
         assertThat(mergeResult).isInstanceOf(MergeResult.MergeSuccess.class);
@@ -59,9 +60,9 @@ public class MergeEngineTest {
     }
     @Test
     public void both_changed_to_same_value_emits_success(){
-        ValueNode ours = StringNode.valueOf("string2");
-        ValueNode base = StringNode.valueOf("string1");
-        ValueNode theirs = StringNode.valueOf("string2");
+        ValueSlot ours = ValueSlot.present(StringNode.valueOf("string2"));
+        ValueSlot base = ValueSlot.present(StringNode.valueOf("string1"));
+        ValueSlot theirs = ValueSlot.present(StringNode.valueOf("string2"));
 //        assertThat(mergeEngine.mergePrimitive(null,ours,theirs,base);
         MergeResult mergeResult = mergeEngine.mergePrimitive(null,ours,theirs,base);
         assertThat(mergeResult).isInstanceOf(MergeResult.MergeSuccess.class);
@@ -71,9 +72,9 @@ public class MergeEngineTest {
     }
     @Test
     public void base_value_deleted_theirs_unchanged(){
-        ValueNode ours = StringNode.valueOf("string2");
-        ValueNode base = StringNode.valueOf("");
-        ValueNode theirs = StringNode.valueOf("string2");
+        ValueSlot ours = ValueSlot.present(StringNode.valueOf("string2"));
+        ValueSlot base = ValueSlot.missing();
+        ValueSlot theirs = ValueSlot.present(StringNode.valueOf("string2"));
 //        assertThat(mergeEngine.mergePrimitive(null,ours,theirs,base);
         MergeResult mergeResult = mergeEngine.mergePrimitive(null,ours,theirs,base);
         assertThat(mergeResult).isInstanceOf(MergeResult.MergeSuccess.class);
@@ -81,12 +82,12 @@ public class MergeEngineTest {
                 (MergeResult.MergeSuccess) mergeResult;
         assertThat(success.mergedOutcome()).isEqualTo(ours);
     }
-
+//
     @Test
     public void type_changed_both_sides_same(){
-        ValueNode ours = IntNode.valueOf(100);
-        ValueNode base = StringNode.valueOf("100");
-        ValueNode theirs = IntNode.valueOf(100);
+        ValueSlot ours = ValueSlot.present(IntNode.valueOf(100));
+        ValueSlot base = ValueSlot.present(StringNode.valueOf("100"));
+        ValueSlot theirs = ValueSlot.present(IntNode.valueOf(100));
 //        assertThat(mergeEngine.mergePrimitive(null,ours,theirs,base);
         MergeResult mergeResult = mergeEngine.mergePrimitive(null,ours,theirs,base);
         assertThat(mergeResult).isInstanceOf(MergeResult.MergeSuccess.class);
@@ -94,12 +95,12 @@ public class MergeEngineTest {
                 (MergeResult.MergeSuccess) mergeResult;
         assertThat(success.mergedOutcome()).isEqualTo(ours);
     }
-
+//
     @Test
     public void one_side_set_to_null_from_int_node(){
-        ValueNode ours = IntNode.valueOf(100);
-        ValueNode base = IntNode.valueOf(100);
-        ValueNode theirs = NullNode.getInstance();
+        ValueSlot ours = ValueSlot.present(IntNode.valueOf(100));
+        ValueSlot base = ValueSlot.present(IntNode.valueOf(100));
+        ValueSlot theirs = ValueSlot.present(NullNode.getInstance());
 //        assertThat(mergeEngine.mergePrimitive(null,ours,theirs,base);
         MergeResult mergeResult = mergeEngine.mergePrimitive(null,ours,theirs,base);
         assertThat(mergeResult).isInstanceOf(MergeResult.MergeSuccess.class);
@@ -107,26 +108,26 @@ public class MergeEngineTest {
                 (MergeResult.MergeSuccess) mergeResult;
         assertThat(success.mergedOutcome()).isInstanceOf(NullNode.class);
     }
-
+//
     @Test
     public void both_side_set_to_null_from_int_node(){
-        ValueNode ours = NullNode.getInstance();
-        ValueNode base = IntNode.valueOf(100);
-        ValueNode theirs = NullNode.getInstance();
+        ValueSlot ours = ValueSlot.present(NullNode.getInstance());
+        ValueSlot base = ValueSlot.present(IntNode.valueOf(100));
+        ValueSlot theirs = ValueSlot.present(NullNode.getInstance());
         MergeResult mergeResult = mergeEngine.mergePrimitive(null,ours,theirs,base);
         assertThat(mergeResult).isInstanceOf(MergeResult.MergeSuccess.class);
         MergeResult.MergeSuccess success =
                 (MergeResult.MergeSuccess) mergeResult;
         assertThat(success.mergedOutcome()).isInstanceOf(NullNode.class);
     }
-
-
-    // now conflicting test cases here:
+//
+//
+//    // now conflicting test cases here:
     @Test
     public void both_modified_ours_theirs(){
-        ValueNode ours = IntNode.valueOf(1001);
-        ValueNode base = IntNode.valueOf(100);
-        ValueNode theirs = IntNode.valueOf(1002);
+        ValueSlot ours = ValueSlot.present(IntNode.valueOf(1001));
+        ValueSlot base = ValueSlot.present(IntNode.valueOf(100));
+        ValueSlot theirs = ValueSlot.present(IntNode.valueOf(1002));
         MergeResult mergeResult = mergeEngine.mergePrimitive(null,ours,theirs,base);
         assertThat(mergeResult).isInstanceOf(MergeResult.MergeWithConflicts.class);
         MergeResult.MergeWithConflicts conflict =
@@ -135,9 +136,9 @@ public class MergeEngineTest {
     }
     @Test
     public void ours_type_changed_int_to_boolean(){
-        ValueNode base = IntNode.valueOf(100);
-        ValueNode ours = BooleanNode.valueOf(false);
-        ValueNode theirs = IntNode.valueOf(1002);
+        ValueSlot base = ValueSlot.present(IntNode.valueOf(100));
+        ValueSlot ours = ValueSlot.present(BooleanNode.valueOf(false));
+        ValueSlot theirs = ValueSlot.present(IntNode.valueOf(1002));
         MergeResult mergeResult = mergeEngine.mergePrimitive(null,ours,theirs,base);
         assertThat(mergeResult).isInstanceOf(MergeResult.MergeWithConflicts.class);
         MergeResult.MergeWithConflicts conflict =
@@ -146,9 +147,9 @@ public class MergeEngineTest {
     }
     @Test
     public void type_changed_with_same_value_int_to_string(){
-        ValueNode base = IntNode.valueOf(100);
-        ValueNode ours = StringNode.valueOf("100");
-        ValueNode theirs = IntNode.valueOf(1002);
+        ValueSlot base = ValueSlot.present(IntNode.valueOf(100));
+        ValueSlot ours = ValueSlot.present(StringNode.valueOf("100"));
+        ValueSlot theirs = ValueSlot.present(IntNode.valueOf(1002));
         MergeResult mergeResult = mergeEngine.mergePrimitive(null,ours,theirs,base);
         assertThat(mergeResult).isInstanceOf(MergeResult.MergeWithConflicts.class);
         MergeResult.MergeWithConflicts conflict =
@@ -157,9 +158,9 @@ public class MergeEngineTest {
     }
     @Test
     public void value_and_type_both_changed_emits_TYPE_CHANGED(){
-        ValueNode base = IntNode.valueOf(100);
-        ValueNode ours = StringNode.valueOf("1001");
-        ValueNode theirs = IntNode.valueOf(1002);
+        ValueSlot base = ValueSlot.present(IntNode.valueOf(100));
+        ValueSlot ours = ValueSlot.present(StringNode.valueOf("1001"));
+        ValueSlot theirs = ValueSlot.present(IntNode.valueOf(1002));
         MergeResult mergeResult = mergeEngine.mergePrimitive(null,ours,theirs,base);
         assertThat(mergeResult).isInstanceOf(MergeResult.MergeWithConflicts.class);
         MergeResult.MergeWithConflicts conflict =
