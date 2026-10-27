@@ -3,6 +3,7 @@ import org.springframework.stereotype.Service;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ValueNode;
 
 import java.util.Comparator;
 
@@ -34,6 +35,11 @@ public class JsonDocumentService {
     };
 
     public boolean structurallyEqual(JsonNode left, JsonNode right) {
+        if(left.isNull() || right.isNull()){
+            // if one of them is null we can just use the .equals provided by the JsonNode;
+            return left.equals(right);
+        }
+
         return left.equals(NUMERIC_AWARE, right);
     }
     public JsonNode deepCopy(JsonNode node){
