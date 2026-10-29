@@ -2,6 +2,8 @@ package com.zaid.Delta_Forge.features.merge;
 
 import com.zaid.Delta_Forge.features.json.JsonDocumentService;
 import com.zaid.Delta_Forge.features.json.ValueSlot;
+import com.zaid.Delta_Forge.features.merge.array_merge.ArrayMergeStrategy;
+import com.zaid.Delta_Forge.features.merge.array_merge.AtomicArrayStrategy;
 import org.springframework.stereotype.Service;
 import tools.jackson.core.JsonPointer;
 import tools.jackson.databind.JsonNode;
@@ -17,6 +19,7 @@ public class MergeEngine {
     public MergeEngine(JsonDocumentService jsonService){
         this.jsonService = jsonService;
     }
+    AtomicArrayStrategy arrayStrategy = new AtomicArrayStrategy();
     private boolean equalsSlot(ValueSlot a, ValueSlot b) {
         return switch (a) {
             case ValueSlot.Missing() -> b instanceof ValueSlot.Missing;
@@ -93,7 +96,7 @@ public class MergeEngine {
                 return mergeObject(path, (ObjectNode) bn, (ObjectNode) on, (ObjectNode) tn);
             }
             if (on.isArray() && tn.isArray() && bn.isArray()) {
-                //return mergeArray(path, bn, on, tn);   // Day 22
+                return arrayStrategy.merge(bn,on,tn,path);
             }
         }
         return mergePrimitive(path, o, t, b);
