@@ -32,7 +32,7 @@ public class DiffEngineImplTest {
 //                service.parse("{\"service\":{\"databasse\":{\"host\":\"db2\"}}}"));
 //        for(DiffOperation d : ops){
 //            System.out.println(d.diffOperationType() + " " + d.path().toString() + " " + d.oldVal() + " -> " + d.newVal());
-//        }
+//       ha }
 ////        assertThat(ops).hasSize(1);
 //        DiffOperation op = ops.getFirst();
         //assertThat(op.path().toString()).isEqualTo("/port");
