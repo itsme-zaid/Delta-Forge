@@ -6,6 +6,7 @@ import java.time.Instant;
 import java.util.Objects;
 
 public record Resolution(
+        String conflictId,
         ValueSlot resolvedValue,
         ResolutionSource source,
         String resolvedBy,

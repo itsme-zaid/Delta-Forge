@@ -9,8 +9,10 @@ import tools.jackson.core.JsonPointer;
 import tools.jackson.databind.JsonNode;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public record ConflictReport(
         List<ConflictEntry> conflicts,
@@ -28,16 +30,24 @@ public record ConflictReport(
 
     public static ConflictReport from(List<MergeConflict> conflicts,
                                       List<Resolution> resolutions,
-                                      ReportStatus status) {
-        // Map resolutions by path; a conflict may or may not have one.
-        // For Day 25, we just build entries with empty Optional for all.
-        // Day 41 will wire in the actual resolution matching.
+                                      ReportStatus baseStatus) {
+        // Map resolutions by conflictId for O(1) matching
+        Map<String, Resolution> byId = resolutions.stream()
+                .collect(Collectors.toMap(Resolution::conflictId, r -> r));
+
         List<ConflictEntry> entries = conflicts.stream()
-                .map(c -> new ConflictEntry(
-                        generateConflictId(c),
-                        c,
-                        Optional.empty()))
+                .map(c -> {
+                    String id = generateConflictId(c);
+                    return new ConflictEntry(id, c, Optional.ofNullable(byId.get(id)));
+                })
                 .toList();
+
+        ReportStatus status = baseStatus == ReportStatus.APPLIED
+                ? ReportStatus.APPLIED
+                : (entries.stream().allMatch(ConflictEntry::isResolved)
+                ? ReportStatus.RESOLVED
+                : ReportStatus.UNRESOLVED);
+
         return new ConflictReport(entries, status);
     }
 
