@@ -6,6 +6,7 @@ import java.time.Instant;
 import java.util.Objects;
 
 public record Snapshot(
+        // SnapshotHash is basically the hash of the josn document wrapped in a record
         SnapshotHash hash,
         JsonNode document,            // parsed tree
         String normalizationVersion,  // "normalization-v1"
