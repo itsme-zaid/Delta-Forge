@@ -1,0 +1,1 @@
+## The one idea: a version control system is a content-addressable map from hashes to immutable objects, plus a set of named mutable pointers into that map, plus a way to look up ancestry.
