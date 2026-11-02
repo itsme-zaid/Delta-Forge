@@ -2,6 +2,7 @@ package com.zaid.Delta_Forge.features.json;
 import org.springframework.stereotype.Service;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.cfg.JsonNodeFeature;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.node.ValueNode;
 
@@ -47,7 +48,8 @@ public class JsonDocumentService {
     }
     public String serialize(JsonNode node) {
         try {
-            return mapper.writeValueAsString(node);
+            JsonMapper jsonMapper = JsonMapper.builder().enable(JsonNodeFeature.WRITE_PROPERTIES_SORTED).build();
+            return jsonMapper.writeValueAsString(node);
         } catch (JacksonException e) {
             throw new IllegalStateException("Unserializable node", e);
         }
