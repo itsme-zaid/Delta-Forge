@@ -9,6 +9,7 @@ import com.zaid.Delta_Forge.features.vcs_core.branch.Branch;
 import com.zaid.Delta_Forge.features.vcs_core.branch.BranchName;
 import com.zaid.Delta_Forge.features.vcs_core.commit.Commit;
 import com.zaid.Delta_Forge.features.vcs_core.commit.CommitId;
+import com.zaid.Delta_Forge.features.vcs_core.commit.CommitSummary;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.JsonNode;
 
@@ -16,6 +17,7 @@ import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 @Service
 public class RepoService {
@@ -108,12 +110,14 @@ public class RepoService {
 
         // 1. Load the branch, verify the expected head matches (CAS — Day 32 refines this).
         Branch branch = state.requireBranch(branchName);
-        if (!branch.headCommitId().equals(expectedHead)) {
-            throw new RuntimeException(
-                    "branch " + branchName + " moved from " + expectedHead
-                            + " to " + branch.headCommitId());
-        }
+        synchronized (state){
+            if (!branch.headCommitId().equals(expectedHead)) {
+                throw new RuntimeException(
+                        "branch " + branchName + " moved from " + expectedHead
+                                + " to " + branch.headCommitId());
 
+            }
+        }
         // 2. Store the new snapshot (deduplicating by hash).
         SnapshotHash hash = null;
         try {
@@ -137,24 +141,93 @@ public class RepoService {
 
     // ============ listCommits ============
 
-    public List<Commit> listCommits(RepositoryId repoId, BranchName branchName) {
+    // CommitSummary DTO — new file
+
+    public List<CommitSummary> listCommits(RepositoryId repoId,
+                                           BranchName branchName,
+                                           int limit,
+                                           int offset) {
         RepositoryState state = requireState(repoId);
         Branch branch = state.requireBranch(branchName);
         CommitId head = branch.headCommitId();
 
+        // 1. BFS from head (reachable set)
+        List<Commit> reachable = bfsFromHead(state, head);
+
+        // 2. Sort: newest first, then by id for determinism
+        reachable.sort(Comparator
+                .comparing(Commit::createdAt).reversed()
+                .thenComparing(commit -> commit.id().value()));
+
+        // 3. Slice for pagination
+        List<Commit> page = reachable.stream()
+                .skip(offset)
+                .limit(limit)
+                .toList();
+
+        // 4. Compute branch labels for the page's commits
+        Map<CommitId, List<String>> branchLabels = branchesByCommit(state);
+
+        // 5. Convert to CommitSummary
+        return page.stream()
+                .map(c -> new CommitSummary(
+                        c.id(), c.author(), c.message(), c.createdAt(),
+                        c.snapshotHash(), c.parents(),
+                        branchLabels.getOrDefault(c.id(), List.of())))
+                .toList();
+    }
+
+    public CommitSummary getCommit(RepositoryId repoId, CommitId commitId) {
+        RepositoryState state = requireState(repoId);
+        Commit c = state.requireCommit(commitId);
+        Map<CommitId, List<String>> branchLabels = branchesByCommit(state);
+        return new CommitSummary(
+                c.id(), c.author(), c.message(), c.createdAt(),
+                c.snapshotHash(), c.parents(),
+                branchLabels.getOrDefault(c.id(), List.of()));
+    }
+
+    public CommitId findRoot(RepositoryId repoId, BranchName branchName) {
+        RepositoryState state = requireState(repoId);
+        CommitId current = state.requireBranch(branchName).headCommitId();
+        while (true) {
+            Commit c = state.requireCommit(current);
+            if (c.isRootCommit()) return current;
+            current = c.parents().get(0);
+        }
+    }
+
+// --- private helpers ---
+
+    private List<Commit> bfsFromHead(RepositoryState state, CommitId head) {
         List<Commit> result = new ArrayList<>();
         Deque<CommitId> frontier = new ArrayDeque<>();
         Set<CommitId> visited = new HashSet<>();
         frontier.add(head);
-
         while (!frontier.isEmpty()) {
             CommitId id = frontier.poll();
             if (!visited.add(id)) continue;
             Commit c = state.requireCommit(id);
             result.add(c);
-            // Enqueue parents (for a merge commit, this visits both branches of history)
             frontier.addAll(c.parents());
         }
+        return result;
+    }
+
+    private Set<CommitId> reachableFrom(RepositoryState state, CommitId head) {
+        return bfsFromHead(state, head).stream()
+                .map(Commit::id)
+                .collect(Collectors.toSet());
+    }
+
+    private Map<CommitId, List<String>> branchesByCommit(RepositoryState state) {
+        Map<CommitId, List<String>> result = new HashMap<>();
+        for (Branch b : state.branches.values()) {
+            for (CommitId id : reachableFrom(state, b.headCommitId())) {
+                result.computeIfAbsent(id, k -> new ArrayList<>()).add(b.name().value());
+            }
+        }
+        result.values().forEach(list -> list.sort(String::compareTo));
         return result;
     }
 
