@@ -4,6 +4,9 @@ import com.zaid.Delta_Forge.features.json.JsonDocumentService;
 import com.zaid.Delta_Forge.features.json.ValueSlot;
 import com.zaid.Delta_Forge.features.merge.array_merge.ArrayMergeStrategy;
 import com.zaid.Delta_Forge.features.merge.array_merge.AtomicArrayStrategy;
+import com.zaid.Delta_Forge.features.vcs_core.branch.BranchName;
+import com.zaid.Delta_Forge.features.vcs_core.commit.CommitId;
+import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Service;
 import tools.jackson.core.JsonPointer;
 import tools.jackson.databind.JsonNode;
@@ -27,6 +30,12 @@ public class MergeEngine {
                     && jsonService.structurallyEqual(an, bn);
         };
     }
+
+    public MergeResult merge(@NonNull JsonPointer path, @NonNull JsonNode ours,@NonNull JsonNode theirs,@NonNull JsonNode base){
+        MergeResult res = mergeNodes(path,ValueSlot.of(ours),ValueSlot.of(theirs),ValueSlot.of(base));
+        return null;
+    }
+
     public MergeResult mergePrimitive(JsonPointer path,
                                       ValueSlot ours,
                                       ValueSlot theirs,
@@ -88,50 +97,7 @@ public class MergeEngine {
         }
         return MergeResult.conflicted(merged, conflicts);
     }
-//    public MergeResult mergeObject(JsonPointer path,
-//                                   JsonNode base,
-//                                   JsonNode ours,
-//                                   JsonNode theirs) {
-//
-//        ObjectNode merged = JsonNodeFactory.instance.objectNode();
-//        if(!(base instanceof ObjectNode) || !(ours instanceof ObjectNode) || !(theirs instanceof ObjectNode)) mergeNodes(path,ValueSlot.of(base),ValueSlot.of(ours),ValueSlot.of(theirs));
-//        List<MergeConflict> conflicts = new ArrayList<>();
-//
-//        // Union of keys, sorted for determinism.
-//        TreeSet<String> keys = new TreeSet<>();
-//        base.propertyNames().forEach(keys::add);
-//        ours.propertyNames().forEach(keys::add);
-//        theirs.propertyNames().forEach(keys::add);
-//
-//        for (String key : keys) {
-//            JsonPointer childPath = path.appendProperty(key);
-//
-//            ValueSlot b = ValueSlot.of(base.path(key));       // Missing if absent
-//            ValueSlot o = ValueSlot.of(ours.path(key));
-//            ValueSlot t = ValueSlot.of(theirs.path(key));
-//
-//            MergeResult childResult = mergeNodes(childPath, b, o, t);
-//
-//            if (childResult instanceof MergeResult.MergeSuccess s) {
-//                // Resolved. Add to merged tree if present.
-//                if (s.mergedOutcome() instanceof ValueSlot.Present(JsonNode n)) {
-//                    merged.set(key, n);
-//                }
-//                // If null: this key resolved to "missing" (clean delete or both-absent).
-//                // Simply don't add it to the merged object.
-//            } else if (childResult instanceof MergeResult.MergeConflicted c) {
-//                conflicts.addAll(c.conflicts());
-//                // If the child produced a partial tree, we could merge it in,
-//                // but for v1 we drop it and let the user resolve.
-//                // The conflict record preserves what ours/theirs/base were.
-//            }
-//        }
-//
-//        if (conflicts.isEmpty()) {
-//            return MergeResult.success(new ValueSlot.Present(merged));
-//        }
-//        return MergeResult.conflicted(merged, conflicts);
-//    }
+
     private MergeResult mergeNodes(JsonPointer path, ValueSlot b, ValueSlot o, ValueSlot t) {
         if (o instanceof ValueSlot.Present(JsonNode on)
                 && t instanceof ValueSlot.Present(JsonNode tn)
@@ -161,4 +127,5 @@ public class MergeEngine {
 
         return ConflictType.BOTH_MODIFIED;
     }
+
 }
