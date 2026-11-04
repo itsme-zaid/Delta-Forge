@@ -10,10 +10,11 @@ import com.zaid.Delta_Forge.features.vcs_core.branch.BranchName;
 import com.zaid.Delta_Forge.features.vcs_core.commit.Commit;
 import com.zaid.Delta_Forge.features.vcs_core.commit.CommitId;
 import com.zaid.Delta_Forge.features.vcs_core.commit.CommitSummary;
+import com.zaid.Delta_Forge.features.vcs_core.exceptions.UnrelatedHistoriesException;
+import com.zaid.Delta_Forge.features.vcs_core.exceptions.UnsupportedHistoryException;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.JsonNode;
 
-import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -53,7 +54,7 @@ public class RepoService {
         SnapshotHash hash = null;
         try {
             hash = storeSnapshot(state, initialDocument);
-        } catch (NoSuchAlgorithmException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
         Commit rootCommit = createCommit(
@@ -122,7 +123,7 @@ public class RepoService {
         SnapshotHash hash = null;
         try {
             hash = storeSnapshot(state, newDocument);
-        } catch (NoSuchAlgorithmException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
@@ -244,7 +245,7 @@ public class RepoService {
      * Returns the hash. If a snapshot with the same hash already exists, returns
      * the existing one (no duplicate row).
      */
-    private SnapshotHash storeSnapshot(RepositoryState state, JsonNode document) throws NoSuchAlgorithmException {
+    private SnapshotHash storeSnapshot(RepositoryState state, JsonNode document){
         // Day 15's normalization-v1: sort keys, normalize numbers.
         // For Day 30, we stub this — Day 15 work is when the canonical form lands.
         String canonical = jsonService.serialize(document);   // placeholder
@@ -271,4 +272,91 @@ public class RepoService {
         state.commits.put(commit.id(), commit);
         return commit;
     }
+    public CommitId findBestCommonAncestor(RepositoryId repoId, CommitId ours, CommitId theirs) {
+        List<CommitId> candidates = common(repoId, ours, theirs);
+        if (candidates.isEmpty()) {
+            throw new UnrelatedHistoriesException(ours, theirs);
+        }
+        if (candidates.size() > 1) {
+            throw new UnsupportedHistoryException(
+                    "criss-cross merge: multiple best common ancestors " + candidates);
+        }
+        return candidates.getFirst();
+    }
+    private List<CommitId> common(RepositoryId repoId, CommitId ours, CommitId theirs) {
+        RepositoryState state = stores.get(repoId);
+        if (ours.equals(theirs)) return new ArrayList<>(List.of(ours));
+
+        Set<CommitId> oursVisited   = new HashSet<>();
+        Set<CommitId> theirsVisited = new HashSet<>();
+        Deque<CommitId> oursFrontier   = new ArrayDeque<>();
+        Deque<CommitId> theirsFrontier = new ArrayDeque<>();
+
+        oursVisited.add(ours);
+        theirsVisited.add(theirs);
+        oursFrontier.offer(ours);
+        theirsFrontier.offer(theirs);
+
+        List<CommitId> ans = new ArrayList<>();
+
+        while (!oursFrontier.isEmpty() || !theirsFrontier.isEmpty()) {
+            int oursSize   = oursFrontier.size();
+            int theirsSize = theirsFrontier.size();
+
+            // Expand the full current level on the ours side.
+            for (int i = 0; i < oursSize; i++) {
+                Commit x = state.requireCommit(oursFrontier.poll());
+                for (CommitId p : x.parents()) {
+                    if (oursVisited.add(p)) {
+                        oursFrontier.offer(p);
+                        if (theirsVisited.contains(p)) ans.add(p);
+                    }
+                }
+            }
+
+            // Expand the full current level on the theirs side.
+            for (int i = 0; i < theirsSize; i++) {
+                Commit x = state.requireCommit(theirsFrontier.poll());
+                for (CommitId p : x.parents()) {
+                    if (theirsVisited.add(p)) {
+                        theirsFrontier.offer(p);
+                        if (oursVisited.contains(p)) ans.add(p);
+                    }
+                }
+            }
+
+            if (!ans.isEmpty()) return ans;
+        }
+        return ans;   // empty → UnrelatedHistoriesException at the caller
+    }
+    public Commit createMergeCommit(RepositoryId repoId, BranchName branch,
+                                    CommitId parent1, CommitId parent2,
+                                    JsonNode document, String author, String message) {
+        RepositoryState state = requireState(repoId);
+        synchronized (state) {
+            Branch b = state.requireBranch(branch);
+            state.requireCommit(parent1);
+            state.requireCommit(parent2);
+
+            SnapshotHash hash = storeSnapshot(state, document);
+            Commit mergeCommit = createCommit(
+                    state, hash, List.of(parent1, parent2), author, message);
+            Branch updated = new Branch(
+                    b.id(), repoId, branch,
+                    mergeCommit.id(), b.createdAt(), Instant.now());
+            state.branches.put(branch, updated);
+            return mergeCommit;
+        }
+    }
+
+//    CommitId createOrphanCommitForTest(RepositoryId repoId, JsonNode document,
+//                                       String author, String message) {
+//        RepositoryState state = requireState(repoId);
+//        synchronized (state) {
+//            SnapshotHash hash = storeSnapshot(state, document);
+//            Commit c = createCommit(state, hash, List.of(), author, message);
+//            return c.id();
+//        }
+//    }
+
 }

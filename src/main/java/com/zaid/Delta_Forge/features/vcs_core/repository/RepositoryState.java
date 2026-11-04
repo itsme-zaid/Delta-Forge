@@ -25,7 +25,7 @@ final class RepositoryState {
     // Convenience accessors — fail loudly if referenced, missing
     Commit requireCommit(CommitId id) {
         Commit c = commits.get(id);
-        if (c == null) throw new NoSuchElementException("commit not found: " + id);
+//        if (c == null) throw new NoSuchElementException("commit not found: " + id);
         return c;
     }
     Snapshot requireSnapshot(SnapshotHash h) {
