@@ -1,9 +1,8 @@
-package com.zaid.Delta_Forge.UnitTesting;
+package com.zaid.Delta_Forge.UnitTesting.logic_testing;
 
 import com.zaid.Delta_Forge.features.json.JsonDocumentService;
 import com.zaid.Delta_Forge.features.json.ValueSlot;
 import com.zaid.Delta_Forge.features.merge.ConflictType;
-import com.zaid.Delta_Forge.features.merge.MergeConflict;
 import com.zaid.Delta_Forge.features.merge.MergeEngine;
 import com.zaid.Delta_Forge.features.merge.MergeResult;
 import org.junit.jupiter.api.BeforeEach;

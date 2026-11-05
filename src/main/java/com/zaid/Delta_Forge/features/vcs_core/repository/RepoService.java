@@ -2,6 +2,9 @@ package com.zaid.Delta_Forge.features.vcs_core.repository;
 
 
 import com.zaid.Delta_Forge.features.json.JsonDocumentService;
+import com.zaid.Delta_Forge.features.json.ValueSlot;
+import com.zaid.Delta_Forge.features.merge.MergeEngine;
+import com.zaid.Delta_Forge.features.merge.MergeResult;
 import com.zaid.Delta_Forge.features.vcs_core.blob.Snapshot;
 import com.zaid.Delta_Forge.features.vcs_core.blob.SnapshotHash;
 import com.zaid.Delta_Forge.features.vcs_core.blob.SnapshotHasher;
@@ -10,9 +13,12 @@ import com.zaid.Delta_Forge.features.vcs_core.branch.BranchName;
 import com.zaid.Delta_Forge.features.vcs_core.commit.Commit;
 import com.zaid.Delta_Forge.features.vcs_core.commit.CommitId;
 import com.zaid.Delta_Forge.features.vcs_core.commit.CommitSummary;
+import com.zaid.Delta_Forge.features.vcs_core.exceptions.StaleHeadException;
 import com.zaid.Delta_Forge.features.vcs_core.exceptions.UnrelatedHistoriesException;
 import com.zaid.Delta_Forge.features.vcs_core.exceptions.UnsupportedHistoryException;
+import com.zaid.Delta_Forge.features.vcs_core.merge.MergeReport;
 import org.springframework.stereotype.Service;
+import tools.jackson.core.JsonPointer;
 import tools.jackson.databind.JsonNode;
 
 import java.time.Instant;
@@ -24,6 +30,7 @@ import java.util.stream.Collectors;
 public class RepoService {
 
     private final JsonDocumentService jsonService;
+    private final MergeEngine mergeEngine;
 
     // In-memory store. Keyed by repository id.
     // ConcurrentHashMap so two concurrent initializeRepository calls can't collide;
@@ -32,6 +39,7 @@ public class RepoService {
 
     public RepoService(JsonDocumentService jsonService) {
         this.jsonService = jsonService;
+        this.mergeEngine = new MergeEngine(jsonService);
     }
 
     // ============ initializeRepository ============
@@ -143,7 +151,10 @@ public class RepoService {
     // ============ listCommits ============
 
     // CommitSummary DTO — new file
-
+    // In RepositoryService, public — used by tests and by applyMerge's callers
+    public Commit getCommitRecord(RepositoryId repoId, CommitId commitId) {
+        return requireState(repoId).requireCommit(commitId);
+    }
     public List<CommitSummary> listCommits(RepositoryId repoId,
                                            BranchName branchName,
                                            int limit,
@@ -348,7 +359,75 @@ public class RepoService {
             return mergeCommit;
         }
     }
+     // no merge-commit in a single function, we will keep it separate with individual endpoints
+     public MergeResult merge(RepositoryId repoId, BranchName ours, BranchName theirs) {
+         RepositoryState state = requireState(repoId);
 
+         Branch oursBranch   = state.requireBranch(ours);
+         Branch theirsBranch = state.requireBranch(theirs);
+
+         CommitId oursHead   = oursBranch.headCommitId();
+         CommitId theirsHead = theirsBranch.headCommitId();
+
+         CommitId base = findBestCommonAncestor(repoId, oursHead, theirsHead);
+
+         JsonNode baseDoc   = state.requireSnapshot(state.requireCommit(base).snapshotHash()).document();
+         JsonNode oursDoc   = state.requireSnapshot(state.requireCommit(oursHead).snapshotHash()).document();
+         JsonNode theirsDoc = state.requireSnapshot(state.requireCommit(theirsHead).snapshotHash()).document();
+         return mergeEngine.merge(JsonPointer.compile(""),oursDoc,theirsDoc,baseDoc);
+     }
+    /**
+     * Commits a resolved merge. The target branch head MUST still be at
+     * expectedTargetHead (CAS); otherwise StaleHeadException is thrown.
+     *
+     * This is called both from the no-conflict path (with the MergeSuccess
+     * outcome) and from the resolution path (with the partial tree + resolutions
+     * materialized into a single JsonNode).
+     */
+    public Commit applyMerge(RepositoryId repoId,
+                             BranchName source,
+                             BranchName target,
+                             CommitId expectedTargetHead,
+                             JsonNode resolvedDocument,
+                             String author,
+                             String message) {
+        RepositoryState state = requireState(repoId);
+
+        synchronized (state) {
+            Branch tgt = state.requireBranch(target);
+            if (!tgt.headCommitId().equals(expectedTargetHead)) {
+                throw new StaleHeadException(
+                        "target " + target + " moved from " + expectedTargetHead
+                                + " to " + tgt.headCommitId());
+            }
+
+            CommitId sourceHead = state.requireBranch(source).headCommitId();
+
+            return createMergeCommit(
+                    repoId, target,
+                    expectedTargetHead,        // parent1 = target's previous head (mainline)
+                    sourceHead,                // parent2 = source's head (merged branch)
+                    resolvedDocument,
+                    author, message);
+        }
+    }
+    public MergeReport mergeAndReport(RepositoryId repoId,
+                                      BranchName source,
+                                      BranchName target,
+                                      CommitId expectedTargetHead,
+                                      String author,
+                                      String message) {
+        MergeResult r = merge(repoId, source, target);
+        return switch (r) {
+            case MergeResult.MergeSuccess s -> {
+                JsonNode merged = ((ValueSlot.Present) s.mergedOutcome()).node();
+                Commit c = applyMerge(repoId, source, target, expectedTargetHead,
+                        merged, author, message);
+                yield new MergeReport.Merged(c.id(), merged);
+            }
+            case MergeResult.MergeConflicted c -> new MergeReport.Conflicted(c.partialMergedOutcome(), c.conflicts());
+        };
+    }
 //    CommitId createOrphanCommitForTest(RepositoryId repoId, JsonNode document,
 //                                       String author, String message) {
 //        RepositoryState state = requireState(repoId);

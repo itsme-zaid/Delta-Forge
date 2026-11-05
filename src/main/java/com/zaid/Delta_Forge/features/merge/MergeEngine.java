@@ -33,7 +33,7 @@ public class MergeEngine {
 
     public MergeResult merge(@NonNull JsonPointer path, @NonNull JsonNode ours,@NonNull JsonNode theirs,@NonNull JsonNode base){
         MergeResult res = mergeNodes(path,ValueSlot.of(ours),ValueSlot.of(theirs),ValueSlot.of(base));
-        return null;
+        return res;
     }
 
     public MergeResult mergePrimitive(JsonPointer path,
@@ -75,7 +75,7 @@ public class MergeEngine {
             ValueSlot o = ValueSlot.of(ours.path(key));
             ValueSlot t = ValueSlot.of(theirs.path(key));
 
-            MergeResult childResult = mergeNodes(childPath, b, o, t);
+            MergeResult childResult = mergeNodes(childPath, o,t,b);
 
             if (childResult instanceof MergeResult.MergeSuccess s) {
                 // Resolved. Add to merged tree if present.
@@ -98,7 +98,7 @@ public class MergeEngine {
         return MergeResult.conflicted(merged, conflicts);
     }
 
-    private MergeResult mergeNodes(JsonPointer path, ValueSlot b, ValueSlot o, ValueSlot t) {
+    private MergeResult mergeNodes(JsonPointer path, ValueSlot o, ValueSlot t, ValueSlot b) {
         if (o instanceof ValueSlot.Present(JsonNode on)
                 && t instanceof ValueSlot.Present(JsonNode tn)
                 && b instanceof ValueSlot.Present(JsonNode bn)) {
