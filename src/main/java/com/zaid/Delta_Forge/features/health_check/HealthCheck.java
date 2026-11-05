@@ -7,17 +7,20 @@ import tools.jackson.databind.ObjectMapper;
 
 import java.util.Map;
 import java.util.Iterator;
+
 @RestController
 @RequestMapping("health-check")
 public class HealthCheck {
 
     @Autowired
     private ObjectMapper objectMapper;
+
     @PostMapping
-    public void getDoc(@RequestBody JsonNode node){
-        walk(node,"");
+    public void getDoc(@RequestBody JsonNode node) {
+        walk(node, "");
 //        System.out.println(doc.at("/service/node"));
     }
+
     private void walk(JsonNode node, String path) {
         // Process the current nodeS
         System.out.println(path + " -> " + node.getNodeType() + node.at(path));

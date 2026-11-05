@@ -1,4 +1,5 @@
 package com.zaid.Delta_Forge.UnitTesting.vcs_core_testing;
+
 import com.zaid.Delta_Forge.features.json.JsonDocumentService;
 
 import com.zaid.Delta_Forge.features.merge.MergeEngine;
@@ -13,12 +14,14 @@ import org.junit.jupiter.api.Test;
 import tools.jackson.databind.json.JsonMapper;
 
 import static org.assertj.core.api.Assertions.*;
+
 public class CommonAncestorTest {
     JsonDocumentService jsonService;
     RepoService service;
     Repository repo;
     BranchName main = new BranchName("main");
     MergeEngine mergeEngine;
+
     @BeforeEach
     void setup() {
         jsonService = new JsonDocumentService(JsonMapper.builder().build());
@@ -28,6 +31,7 @@ public class CommonAncestorTest {
                 "myrepo", "alice", "main",
                 jsonService.parse("{\"a\": 0}"), "alice", "init");
     }
+
     private CommitId head(String branch) {
         return service.getBranch(repo.id(), new BranchName(branch)).headCommitId();
     }
@@ -47,6 +51,7 @@ public class CommonAncestorTest {
         CommitId h = head("main");
         assertThat(service.findBestCommonAncestor(repo.id(), h, h)).isEqualTo(h);
     }
+
     @Test
     void identical_non_root_commits_return_themselves() {
         CommitId h0 = head("main");
@@ -54,6 +59,7 @@ public class CommonAncestorTest {
         assertThat(service.findBestCommonAncestor(repo.id(), c1.id(), c1.id()))
                 .isEqualTo(c1.id());
     }
+
     @Test
     void linear_history_base_is_the_ancestor() {
         // main: c0 → c1 → c2
@@ -66,6 +72,7 @@ public class CommonAncestorTest {
         assertThat(service.findBestCommonAncestor(repo.id(), c0, c2.id())).isEqualTo(c0);
         assertThat(service.findBestCommonAncestor(repo.id(), c2.id(), c1.id())).isEqualTo(c1.id());
     }
+
     @Test
     void simple_fork_finds_the_fork_point() {
         // c0 → c1 (main), c0 → c2 (feature)
@@ -77,6 +84,7 @@ public class CommonAncestorTest {
         assertThat(service.findBestCommonAncestor(repo.id(), c1.id(), c2.id()))
                 .isEqualTo(c0);
     }
+
     @Test
     void asymmetric_depths_finds_the_correct_base() {
         // main:     c0 → c1 → c2 → c3 → c4 → c5 → c6 → c7  (ours head = c7)
@@ -95,9 +103,9 @@ public class CommonAncestorTest {
         Commit c7 = commitOn("main", c6.id(), 7, "c7");
 
         service.createBranch(repo.id(), new BranchName("feature/x"), c2.id());
-        Commit c8  = commitOn("feature/x", c2.id(),  8,  "c8");
-        Commit c9  = commitOn("feature/x", c8.id(),  9,  "c9");
-        Commit c10 = commitOn("feature/x", c9.id(),  10, "c10");
+        Commit c8 = commitOn("feature/x", c2.id(), 8, "c8");
+        Commit c9 = commitOn("feature/x", c8.id(), 9, "c9");
+        Commit c10 = commitOn("feature/x", c9.id(), 10, "c10");
 
         assertThat(service.findBestCommonAncestor(repo.id(), c7.id(), c10.id()))
                 .isEqualTo(c2.id());

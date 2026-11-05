@@ -4,8 +4,9 @@ import com.zaid.Delta_Forge.features.json.ValueSlot;
 import tools.jackson.core.JsonPointer;
 
 public record DiffOperation(
-    DiffOperationType diffOperationType,
-    JsonPointer path,
-    ValueSlot oldVal,
-    ValueSlot newVal
-) {}
+        DiffOperationType diffOperationType,
+        JsonPointer path,
+        ValueSlot oldVal,
+        ValueSlot newVal
+) {
+}

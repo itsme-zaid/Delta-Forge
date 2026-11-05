@@ -18,28 +18,28 @@ public class PointerServiceTest {
     private JsonDocumentService jsonDocumentService;
 
     @BeforeEach
-    void setUp(){
+    void setUp() {
         mapper = JsonMapper.builder().build();
         jsonDocumentService = new JsonDocumentService(mapper);
     }
 
     @Test
-    void set_existing_object_key(){
+    void set_existing_object_key() {
         JsonNode doc = jsonDocumentService.parse("{\"a\":1}");
         service.setAt(doc, Pointers.parse("/a"), new IntNode(2));
         assertThat(doc.at(Pointers.parse("/a")).asInt()).isEqualTo(2);
     }
 
     @Test
-    void setAt_creates_missing_parents(){
+    void setAt_creates_missing_parents() {
         JsonNode doc = jsonDocumentService.parse("{}");
-        service.setAt(doc,Pointers.parse("/service/database/host"), StringNode.valueOf("sam"));
+        service.setAt(doc, Pointers.parse("/service/database/host"), StringNode.valueOf("sam"));
 
         assertThat(doc.at(Pointers.parse("/service/database/host")).toString()).isEqualTo("sam");
     }
 
     @Test
-    void setAt_on_array_elements(){
+    void setAt_on_array_elements() {
         JsonNode arr = jsonDocumentService.parse("{\"items\":[\"x\",\"y\"]}");
         service.setAt(arr, Pointers.parse("/items/1"), StringNode.valueOf("z"));
         assertThat(arr.at(Pointers.parse("/items/1")).asText()).isEqualTo("z");

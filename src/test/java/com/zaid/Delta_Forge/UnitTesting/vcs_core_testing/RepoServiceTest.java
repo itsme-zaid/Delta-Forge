@@ -24,10 +24,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class RepoServiceTest {
     private JsonDocumentService jsonDocumentService;
+
     @BeforeEach
-    public void setUp(){
+    public void setUp() {
         jsonDocumentService = new JsonDocumentService(JsonMapper.builder().build());
     }
+
     private Arbitrary<ObjectNode> wrapInObject(Arbitrary<ObjectNode> inner) {
         return inner.map(child -> {
             ObjectNode obj = JsonNodeFactory.instance.objectNode();
@@ -35,6 +37,7 @@ public class RepoServiceTest {
             return obj;
         });
     }
+
     @Provide
     Arbitrary<ObjectNode> documents() {
         return Arbitraries.recursive(
@@ -43,6 +46,7 @@ public class RepoServiceTest {
                 1, 5
         );
     }
+
     @Test
     void same_document_different_key_order_same_hash() {
         JsonNode a = jsonDocumentService.parse("{\"x\": 1, \"y\": 2}");
@@ -55,7 +59,8 @@ public class RepoServiceTest {
         assertThat(SnapshotHasher.hash(canonicalA))
                 .isEqualTo(SnapshotHasher.hash(canonicalB));
     }
-//    @Test
+
+    //    @Test
 //    void concurrent_commits_to_same_branch_exactly_one_succeeds() throws Exception {
 //        RepoService service = new RepoService(jsonService);
 //        Repository repo = service.initializeRepository(
@@ -109,7 +114,7 @@ public class RepoServiceTest {
 //                .hasSize(2);
 //    }
     @Test
-    public void list_commits_print(){
+    public void list_commits_print() {
 
     }
 }

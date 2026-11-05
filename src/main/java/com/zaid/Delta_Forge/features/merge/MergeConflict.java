@@ -11,4 +11,5 @@ public record MergeConflict(
         ValueSlot theirs,
         ValueSlot base,
         ConflictType conflictType
-) {}
+) {
+}

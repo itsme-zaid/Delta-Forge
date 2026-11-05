@@ -24,8 +24,9 @@ public class DiffEngineImplTest {
         service = new JsonDocumentService(mapper);
         diffEngine = new DiffEngineImpl(service);
     }
+
     @Test
-    public void debug_test(){
+    public void debug_test() {
 //        List<DiffOperation> ops = diffEngine.diff(
 //                service.parse("{\"service\":{\"database\":{\"host\":\"db1\"}}}"),
 //                service.parse("{\"service\":{\"databasse\":{\"host\":\"db2\"}}}"));
@@ -38,6 +39,7 @@ public class DiffEngineImplTest {
         //assertThat(((ValueSlot.Present) op.oldVal()).node().asInt()).isEqualTo(8080);
         //assertThat(((ValueSlot.Present) op.newVal()).node().asInt()).isEqualTo(9090);
     }
+
     @Test
     void identical_objects_produce_no_operations() {
         List<DiffOperation> ops = diffEngine.diff(
@@ -45,6 +47,7 @@ public class DiffEngineImplTest {
                 service.parse("{\"a\":1,\"b\":2}"));
         assertThat(ops).isEmpty();
     }
+
     @Test
     void reordered_keys_produce_no_operations() {
         // D1: key order is not meaningful
@@ -53,6 +56,7 @@ public class DiffEngineImplTest {
                 service.parse("{\"b\":2,\"a\":1}"));
         assertThat(ops).isEmpty();
     }
+
     @Test
     void key_only_in_target_emits_add() {
         List<DiffOperation> ops = diffEngine.diff(
@@ -79,6 +83,7 @@ public class DiffEngineImplTest {
         assertThat(op.path().toString()).isEqualTo("/b");
         assertThat(op.newVal()).isInstanceOf(ValueSlot.Missing.class);
     }
+
     @Test
     void changed_value_emits_single_replace_at_key_path() {
         List<DiffOperation> ops = diffEngine.diff(
@@ -89,6 +94,7 @@ public class DiffEngineImplTest {
         assertThat(ops.getFirst().path().toString()).isEqualTo("/a");
         assertThat(ops.getFirst().diffOperationType()).isEqualTo(DiffOperationType.REPLACE);
     }
+
     // multiple keys but in same sorted order
     @Test
     void multiple_changes_are_sorted_by_path() {
@@ -109,6 +115,7 @@ public class DiffEngineImplTest {
         assertThat(ops).hasSize(1);
         assertThat(ops.getFirst().path().toString()).isEqualTo("/service/database/host");
     }
+
     @Test
     void conflict_free_sibling_survives_alongside_changed_sibling() {
         List<DiffOperation> ops = diffEngine.diff(
@@ -133,6 +140,7 @@ public class DiffEngineImplTest {
         assertThat(ops.get(0).diffOperationType()).isEqualTo(DiffOperationType.ADD);      // /host
         assertThat(ops.get(1).diffOperationType()).isEqualTo(DiffOperationType.REPLACE);  // /port
     }
+
     // first type change : object to scalar
     @Test
     void object_replaced_by_scalar_emits_one_replace() {
@@ -147,6 +155,7 @@ public class DiffEngineImplTest {
         assertThat(((ValueSlot.Present) op.oldVal()).node().isObject()).isTrue();
         assertThat(((ValueSlot.Present) op.newVal()).node().asString()).isEqualTo("disabled");
     }
+
     @Test
     void scalar_replaced_by_object_emits_one_replace() {
         List<DiffOperation> ops = diffEngine.diff(
@@ -157,6 +166,7 @@ public class DiffEngineImplTest {
         assertThat(ops.getFirst().diffOperationType()).isEqualTo(DiffOperationType.REPLACE);
         assertThat(ops.getFirst().path().toString()).isEqualTo("/config");
     }
+
     @Test
     void differing_array_emits_one_replace() {
         List<DiffOperation> ops = diffEngine.diff(
@@ -169,7 +179,7 @@ public class DiffEngineImplTest {
     }
 
     @Test
-    void same_array_emits_nothing(){
+    void same_array_emits_nothing() {
         List<DiffOperation> ops = diffEngine.diff(
                 service.parse("{\"items\":[1,2,3]}"),
                 service.parse("{\"items\":[1,2,3]}")
@@ -203,34 +213,37 @@ public class DiffEngineImplTest {
 
     //day 12: array of object behavior
     @Test
-    void array_of_object_same_size(){
+    void array_of_object_same_size() {
         JsonNode base = service.parse("{\"user\":[{\"id\":1}]}");
         JsonNode target = service.parse("{\"user\":[{\"id\":11}]}");
-        List<DiffOperation> ops = diffEngine.diff(base,target);
+        List<DiffOperation> ops = diffEngine.diff(base, target);
         assertThat(ops).hasSize(1);
         assertThat(ops.getFirst().diffOperationType()).isEqualTo(DiffOperationType.REPLACE);
     }
+
     @Test
-    void array_of_object_array_key_element_added(){
+    void array_of_object_array_key_element_added() {
         JsonNode base = service.parse("{\"user\":[{\"id\":1}]}");
         JsonNode target = service.parse("{\"user\":[{\"id\":11},{\"id\":121}]}");
-        List<DiffOperation> ops = diffEngine.diff(base,target);
+        List<DiffOperation> ops = diffEngine.diff(base, target);
         assertThat(ops).hasSize(1);
         assertThat(ops.getFirst().diffOperationType()).isEqualTo(DiffOperationType.REPLACE);
     }
+
     @Test
-    void array_of_object_array_key_element_removed(){
+    void array_of_object_array_key_element_removed() {
         JsonNode base = service.parse("{\"user\":[{\"id\":11},{\"id\":121}]}");
         JsonNode target = service.parse("{\"user\":[{\"id\":1}]}");
-        List<DiffOperation> ops = diffEngine.diff(base,target);
+        List<DiffOperation> ops = diffEngine.diff(base, target);
         assertThat(ops).hasSize(1);
         assertThat(ops.getFirst().diffOperationType()).isEqualTo(DiffOperationType.REPLACE);
     }
+
     @Test
-    void array_of_object_array_order_changed(){
+    void array_of_object_array_order_changed() {
         JsonNode base = service.parse("{\"user\":[{\"id\":11},{\"id\":121}]}");
         JsonNode target = service.parse("{\"user\":[{\"id\":121},{\"id\":11}]}");
-        List<DiffOperation> ops = diffEngine.diff(base,target);
+        List<DiffOperation> ops = diffEngine.diff(base, target);
         assertThat(ops).hasSize(1);
         assertThat(ops.getFirst().diffOperationType()).isEqualTo(DiffOperationType.REPLACE);
     }

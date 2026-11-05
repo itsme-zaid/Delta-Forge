@@ -8,12 +8,18 @@ import java.util.List;
 
 public sealed interface MergeResult permits MergeResult.MergeSuccess, MergeResult.MergeConflicted {
 
-    /** No conflicts; the tree is fully resolved. */
-    record MergeSuccess(ValueSlot mergedOutcome) implements MergeResult {}
+    /**
+     * No conflicts; the tree is fully resolved.
+     */
+    record MergeSuccess(ValueSlot mergedOutcome) implements MergeResult {
+    }
 
-    /** Some keys resolved, some conflicted. Partial tree + the conflicts. */
+    /**
+     * Some keys resolved, some conflicted. Partial tree + the conflicts.
+     */
     record MergeConflicted(JsonNode partialMergedOutcome, List<MergeConflict> conflicts)
-            implements MergeResult {}
+            implements MergeResult {
+    }
 
     static MergeResult success(ValueSlot merged) {
         return new MergeSuccess(merged);

@@ -8,6 +8,7 @@ enforce them (Day 27).
 
 The properties answer the question: **"What can the merge engine do to the
 set of changed paths?"** The answer is a clean two-sided bound:
+
 - The merge never **invents** a path (subset).
 - For non-conflicting merges, the merge never **drops** a path (union equality).
 
@@ -112,6 +113,7 @@ even though both sides showed it as an EDIT. The path set is still correct
 (it's in the union), but the **operation** has changed from EDIT to REMOVE.
 
 So:
+
 - **Path-set equality** happens to hold for conflicting merges too (the path
   is in both the union and the result diff, as a REMOVE). But this is a
   coincidence of path-set comparison, not a semantic property.

@@ -26,6 +26,7 @@ public class MergeIntegratedTest {
     RepoService service;
     Repository repo;
     BranchName main = new BranchName("main");
+
     @BeforeEach
     void setup() {
         jsonService = new JsonDocumentService(JsonMapper.builder().build());

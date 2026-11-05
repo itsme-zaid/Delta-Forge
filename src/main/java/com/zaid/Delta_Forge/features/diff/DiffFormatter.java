@@ -71,6 +71,7 @@ public final class DiffFormatter {
         }
         return jsonDocumentService.serialize(arr);
     }
+
     private String highlightStringChange(String oldStr, String newStr) {
         int[][] lcs = lcs(oldStr, newStr);
         StringBuilder sb = new StringBuilder();
@@ -79,7 +80,8 @@ public final class DiffFormatter {
         while (i < oldStr.length() && j < newStr.length()) {
             if (oldStr.charAt(i) == newStr.charAt(j)) {
                 sb.append(oldStr.charAt(i));
-                i++; j++;
+                i++;
+                j++;
             } else if (lcs[i + 1][j] >= lcs[i][j + 1]) {
                 sb.append("[-").append(oldStr.charAt(i)).append("-]");
                 i++;
@@ -92,6 +94,7 @@ public final class DiffFormatter {
         while (j < newStr.length()) sb.append("[+").append(newStr.charAt(j++)).append("+]");
         return sb.toString();
     }
+
     private int[][] lcs(String oldString, String newString) {
         int m = oldString.length();
         int n = newString.length();

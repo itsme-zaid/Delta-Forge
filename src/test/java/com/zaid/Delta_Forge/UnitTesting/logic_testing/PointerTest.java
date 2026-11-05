@@ -16,10 +16,11 @@ public class PointerTest {
     private JsonDocumentService service;
 
     @BeforeEach
-    void setUp(){
+    void setUp() {
         mapper = JsonMapper.builder().build();
         service = new JsonDocumentService(mapper);
     }
+
     @Test
     void root_is_empty_string() {
         JsonPointer root = Pointers.root();
@@ -27,23 +28,27 @@ public class PointerTest {
         assertThat(Pointers.isRoot(root)).isTrue();
         assertThat(root.matches()).isTrue();
     }
+
     @Test
     void parses_simple_key() {
         JsonPointer p = Pointers.parse("/foo");
         assertThat(Pointers.get(service.parse("{\"foo\":42}"), p).asInt()).isEqualTo(42);
     }
+
     @Test
     void parses_nested_keys() {
         JsonPointer p = Pointers.parse("/service/database/host");
         JsonNode doc = service.parse("{\"service\":{\"database\":{\"host\":\"db\"}}}");
         assertThat(Pointers.get(doc, p).asText()).isEqualTo("db");
     }
+
     @Test
     void parses_array_index() {
         JsonPointer p = Pointers.parse("/items/1");
         JsonNode doc = service.parse("{\"items\":[\"a\",\"b\",\"c\"]}");
         assertThat(Pointers.get(doc, p).asString()).isEqualTo("b");
     }
+
     @Test
     void array_index_must_not_have_leading_zeros() {
         // "/items/01" is not a valid array index; Jackson may parse it
@@ -53,6 +58,7 @@ public class PointerTest {
         JsonNode result = doc.at(Pointers.parse("/items/01"));
         assertThat(result.isMissingNode()).isTrue();
     }
+
     @Test
     void slash_in_key_is_escaped_as_tilde_one() {
         // key "a/b" → pointer "/a~1b"
@@ -80,6 +86,7 @@ public class PointerTest {
         JsonPointer p = Pointers.child(Pointers.root(), "m~n");
         assertThat(p.toString()).isEqualTo("/m~0n");
     }
+
     @Test
     void escaping_encodes_tilde_before_slash() {
         // Key "~1" — a tilde followed by a one.
@@ -94,6 +101,7 @@ public class PointerTest {
         JsonPointer p = Pointers.parse("/~01");
         assertThat(p.getMatchingProperty()).isEqualTo("~1");
     }
+
     @Test
     void empty_key_is_a_single_empty_segment() {
         // {"":42} — key is the empty string
@@ -104,12 +112,14 @@ public class PointerTest {
         // And child(root, "") produces "/" not ""
         assertThat(Pointers.child(Pointers.root(), "").toString()).isEqualTo("/");
     }
+
     @Test
     void space_and_unicode_keys_work() {
         JsonPointer p = Pointers.parse("/with spaces/日本語");
         JsonNode doc = service.parse("{\"with spaces\":{\"日本語\":\"こんにちは\"}}");
         assertThat(Pointers.get(doc, p).asString()).isEqualTo("こんにちは");
     }
+
     @Test
     void malformed_pointer_throws_at_parse() {
         assertThatThrownBy(() -> Pointers.parse("foo"))       // no leading /
@@ -117,12 +127,14 @@ public class PointerTest {
         // Some Jackson versions accept this; check your version's behavior.
         // If it doesn't throw, your `Pointers.parse` should add a validation.
     }
+
     @Test
     void root_array_element_accessible() {
         JsonNode doc = service.parse("[10,20,30]");
         assertThat(Pointers.get(doc, Pointers.parse("/0")).asInt()).isEqualTo(10);
         assertThat(Pointers.get(doc, Pointers.parse("/2")).asInt()).isEqualTo(30);
     }
+
     @Test
     void escaped_slash_does_not_match_nested_object() {
         // A user who has {"a/b": 1} and queries pointer "/a/b" must NOT

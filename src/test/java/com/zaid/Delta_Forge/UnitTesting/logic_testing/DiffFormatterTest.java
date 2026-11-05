@@ -23,15 +23,17 @@ public class DiffFormatterTest {
     private JsonDocumentService service;
 
     private DiffEngineImpl diffEngine;
+
     @BeforeEach
-    public void setup(){
+    public void setup() {
         JsonMapper mapper = JsonMapper.builder().build();
         service = new JsonDocumentService(mapper);
         formatter = new DiffFormatter(service);
         diffEngine = new DiffEngineImpl(service);
     }
+
     @Test
-    public void check_(){
+    public void check_() {
         List<DiffOperation> ops = diffEngine.diff(
                 service.parse("{\"service\":{\"database\":{\"host\":\"db1\",\"host11\":\"db1\"}}}"),
                 service.parse("{\"service\":{\"database\":{\"host11\":\"db1\",\"host\":\"db1\"}}}"));
@@ -43,16 +45,18 @@ public class DiffFormatterTest {
     void empty_operations_renders_no_changes() {
         assertThat(formatter.formatText(List.of())).isEqualTo("(no changes)");
     }
+
     @Test
     void add_renders_plus_prefix() {
         var ops = List.of(new DiffOperation(ADD, JsonPointer.compile("/host"),
                 ValueSlot.MISSING, ValueSlot.present(StringNode.valueOf("localhost"))));
         assertThat(formatter.formatText(ops)).isEqualTo("+ /host = \"localhost\"");
     }
+
     @Test
     void remove_renders_minus_prefix() {
         var ops = List.of(new DiffOperation(REMOVE, JsonPointer.compile("/debug"),
-                ValueSlot.present(BooleanNode.valueOf(true)),ValueSlot.missing()));
+                ValueSlot.present(BooleanNode.valueOf(true)), ValueSlot.missing()));
         assertThat(formatter.formatText(ops)).isEqualTo("- /debug = true");
     }
 
@@ -62,6 +66,7 @@ public class DiffFormatterTest {
                 ValueSlot.present(IntNode.valueOf(8080)), ValueSlot.present((IntNode.valueOf(9090)))));
         assertThat(formatter.formatText(ops)).isEqualTo("~ /port: 8080 -> 9090");
     }
+
     @Test
     void root_path_renders_as_root_label() {
         var ops = List.of(new DiffOperation(REPLACE, JsonPointer.empty(),

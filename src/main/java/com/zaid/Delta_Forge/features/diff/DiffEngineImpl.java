@@ -12,13 +12,17 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.TreeSet;
 
-public class DiffEngineImpl implements DiffEngine{
+public class DiffEngineImpl implements DiffEngine {
     public static final Comparator<DiffOperation> ORDER =
             Comparator.comparing((DiffOperation op) -> op.path().toString())
                     .thenComparing(DiffOperation::diffOperationType);
 
     private final JsonDocumentService jsonDocumentService;
-    public DiffEngineImpl(JsonDocumentService jsonDocumentService) { this.jsonDocumentService = jsonDocumentService;}
+
+    public DiffEngineImpl(JsonDocumentService jsonDocumentService) {
+        this.jsonDocumentService = jsonDocumentService;
+    }
+
     @Override
     public List<DiffOperation> diff(JsonNode base, JsonNode target) {
         List<DiffOperation> out = new ArrayList<>();
@@ -27,9 +31,10 @@ public class DiffEngineImpl implements DiffEngine{
         out.sort(ORDER);
         return List.copyOf(out);
     }
-    private void diffNode(JsonNode base,JsonNode target, JsonPointer path, List<DiffOperation> out){
+
+    private void diffNode(JsonNode base, JsonNode target, JsonPointer path, List<DiffOperation> out) {
         ;
-        if(jsonDocumentService.structurallyEqual(base,target)) return;
+        if (jsonDocumentService.structurallyEqual(base, target)) return;
         // Decision 2: both objects → recurse per key.
         if (base.isObject() && target.isObject()) {
             ObjectNode b = (ObjectNode) base;

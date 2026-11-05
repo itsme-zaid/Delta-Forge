@@ -17,11 +17,13 @@ When `POST /merge` is called, `mergeObject` runs once and produces
 
 Resolutions are **annotations** on the stored conflicts, not inputs to a re-merge.
 Submitting a resolution:
+
 - inserts a row in `resolutions` (keyed by conflictId)
 - does NOT call mergeObject
 - does NOT recompute conflicts
 
 Applying the merge:
+
 - loads the stored partial tree + resolutions
 - materializes (setAt/removeAt per resolution)
 - validates (schema, invariants)
@@ -47,6 +49,7 @@ body: { conflictId, resolvedValue, explanation }
 requires: expected revision (optimistic concurrency)
 
 Each submission:
+
 - checks revision matches (else 409 stale client)
 - checks conflict is not already applied
 - inserts Resolution row
@@ -65,6 +68,7 @@ POST /merge-requests/{id}/apply
 body: { expected revision }
 
 Server:
+
 1. canApply() check (all resolved? already applied?)
 2. stale check (target branch head == pinned ours commit? else STALE_PREVIEW)
 3. materialize(partialTree, resolutions) → final document
@@ -78,12 +82,12 @@ Server:
 ## State transitions
 
 MergeRequest.status:
-OPEN       — created, conflicts may or may not exist
-RESOLVED   — all conflicts have resolutions (derived; may auto-advance)
-APPLIED    — merge commit created
-STALE      — target branch moved; user must create a new merge request
+OPEN — created, conflicts may or may not exist
+RESOLVED — all conflicts have resolutions (derived; may auto-advance)
+APPLIED — merge commit created
+STALE — target branch moved; user must create a new merge request
 VALIDATION_FAILED — materialized doc failed validation; user must re-resolve
-CANCELLED  — user abandoned; main unchanged
+CANCELLED — user abandoned; main unchanged
 
 Allowed transitions:
 OPEN → RESOLVED (last resolution submitted)
@@ -92,11 +96,13 @@ RESOLVED → VALIDATION_FAILED (apply fails validation)
 VALIDATION_FAILED → RESOLVED (user submits new resolution)
 OPEN → CANCELLED
 RESOLVED → CANCELLED
+
 * → STALE (target branch moves at any point before APPLIED)
 
 Forbidden:
 APPLIED → anything (terminal)
 RESOLVED → OPEN (can't un-resolve; only add new resolutions)
+
 * → mergeObject re-run in place
 
 ## What does NOT happen
@@ -110,6 +116,7 @@ RESOLVED → OPEN (can't un-resolve; only add new resolutions)
 ## Why no re-merge
 
 Re-merging would:
+
 - produce the same conflicts again (deterministic, same inputs)
 - discard accumulated resolutions unless re-applied
 - silently absorb new target-branch commits if the branch moved

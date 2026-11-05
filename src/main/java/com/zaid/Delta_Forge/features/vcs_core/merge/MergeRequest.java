@@ -23,4 +23,5 @@ public record MergeRequest(
         int revision,                  // optimistic concurrency for resolution updates
         Instant createdAt,
         Instant appliedAt              // null until APPLIED
-) {}
+) {
+}

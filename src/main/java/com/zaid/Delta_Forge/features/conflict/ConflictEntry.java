@@ -25,6 +25,7 @@ public record ConflictEntry(
     public JsonPointer path() {
         return conflict.path();
     }
+
     public ConflictDisplayStatus displayStatus() {
         return resolution.map(value -> switch (value.source()) {
             case MANUAL -> ConflictDisplayStatus.MANUALLY_RESOLVED;

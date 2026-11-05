@@ -10,17 +10,18 @@ import tools.jackson.databind.node.ObjectNode;
 
 @Service
 public class PointerService {
-    public JsonNode getAt(JsonNode root, JsonPointer pointer){
+    public JsonNode getAt(JsonNode root, JsonPointer pointer) {
         return root.at(pointer);
     }
+
     public boolean existsAt(JsonNode root, JsonPointer pointer) {
         return !root.at(pointer).isMissingNode();
     }
 
     // explain -:> you check the node -> you are directly on that node;, if the node to be removed is an array element you do getMatchingIndex() to get that index and then remove it ,else you can remove it by getting the property;
 
-    public JsonNode removeAt(JsonNode root, JsonPointer pointer){
-        if(Pointers.isRoot(pointer)){
+    public JsonNode removeAt(JsonNode root, JsonPointer pointer) {
+        if (Pointers.isRoot(pointer)) {
             throw new IllegalArgumentException("Cannot remove root from the document");
         }
         JsonPointer parentPtr = pointer.head();
@@ -38,6 +39,7 @@ public class PointerService {
         }
         return root;
     }
+
     public JsonNode setAt(JsonNode root, JsonPointer pointer, JsonNode value) {
         if (Pointers.isRoot(pointer)) {
             return value;  // root replacement — returns a new root

@@ -21,6 +21,7 @@ public class CommitHistoryTest {
     RepoService service;
     Repository repo;
     BranchName main = new BranchName("main");
+
     @BeforeEach
     void setup() {
         jsonService = new JsonDocumentService(JsonMapper.builder().build());
@@ -42,6 +43,7 @@ public class CommitHistoryTest {
         assertThat(history).extracting(CommitSummary::id)
                 .containsExactly(c2.id(), c1.id(), h0);
     }
+
     @Test
     void commit_summary_includes_branch_labels() {
         CommitId h0 = service.getBranch(repo.id(), main).headCommitId();
@@ -58,6 +60,7 @@ public class CommitHistoryTest {
         assertThat(c1Summary.branches())
                 .containsExactly("feature/x", "main");   // sorted alphabetically
     }
+
     @Test
     void list_commits_paginates_stably() {
         CommitId head = service.getBranch(repo.id(), main).headCommitId();
@@ -75,6 +78,7 @@ public class CommitHistoryTest {
         assertThat(page1).extracting(CommitSummary::id)
                 .doesNotContainAnyElementsOf(page2.stream().map(CommitSummary::id).toList());
     }
+
     @Test
     void get_commit_returns_full_summary() {
         Commit c = service.commit(repo.id(), main,

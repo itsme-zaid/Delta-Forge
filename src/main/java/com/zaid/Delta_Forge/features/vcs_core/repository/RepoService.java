@@ -119,7 +119,7 @@ public class RepoService {
 
         // 1. Load the branch, verify the expected head matches (CAS — Day 32 refines this).
         Branch branch = state.requireBranch(branchName);
-        synchronized (state){
+        synchronized (state) {
             if (!branch.headCommitId().equals(expectedHead)) {
                 throw new RuntimeException(
                         "branch " + branchName + " moved from " + expectedHead
@@ -155,6 +155,7 @@ public class RepoService {
     public Commit getCommitRecord(RepositoryId repoId, CommitId commitId) {
         return requireState(repoId).requireCommit(commitId);
     }
+
     public List<CommitSummary> listCommits(RepositoryId repoId,
                                            BranchName branchName,
                                            int limit,
@@ -256,7 +257,7 @@ public class RepoService {
      * Returns the hash. If a snapshot with the same hash already exists, returns
      * the existing one (no duplicate row).
      */
-    private SnapshotHash storeSnapshot(RepositoryState state, JsonNode document){
+    private SnapshotHash storeSnapshot(RepositoryState state, JsonNode document) {
         // Day 15's normalization-v1: sort keys, normalize numbers.
         // For Day 30, we stub this — Day 15 work is when the canonical form lands.
         String canonical = jsonService.serialize(document);   // placeholder
@@ -283,6 +284,7 @@ public class RepoService {
         state.commits.put(commit.id(), commit);
         return commit;
     }
+
     public CommitId findBestCommonAncestor(RepositoryId repoId, CommitId ours, CommitId theirs) {
         List<CommitId> candidates = common(repoId, ours, theirs);
         if (candidates.isEmpty()) {
@@ -294,13 +296,14 @@ public class RepoService {
         }
         return candidates.getFirst();
     }
+
     private List<CommitId> common(RepositoryId repoId, CommitId ours, CommitId theirs) {
         RepositoryState state = stores.get(repoId);
         if (ours.equals(theirs)) return new ArrayList<>(List.of(ours));
 
-        Set<CommitId> oursVisited   = new HashSet<>();
+        Set<CommitId> oursVisited = new HashSet<>();
         Set<CommitId> theirsVisited = new HashSet<>();
-        Deque<CommitId> oursFrontier   = new ArrayDeque<>();
+        Deque<CommitId> oursFrontier = new ArrayDeque<>();
         Deque<CommitId> theirsFrontier = new ArrayDeque<>();
 
         oursVisited.add(ours);
@@ -311,7 +314,7 @@ public class RepoService {
         List<CommitId> ans = new ArrayList<>();
 
         while (!oursFrontier.isEmpty() || !theirsFrontier.isEmpty()) {
-            int oursSize   = oursFrontier.size();
+            int oursSize = oursFrontier.size();
             int theirsSize = theirsFrontier.size();
 
             // Expand the full current level on the ours side.
@@ -340,6 +343,7 @@ public class RepoService {
         }
         return ans;   // empty → UnrelatedHistoriesException at the caller
     }
+
     public Commit createMergeCommit(RepositoryId repoId, BranchName branch,
                                     CommitId parent1, CommitId parent2,
                                     JsonNode document, String author, String message) {
@@ -359,27 +363,29 @@ public class RepoService {
             return mergeCommit;
         }
     }
-     // no merge-commit in a single function, we will keep it separate with individual endpoints
-     public MergeResult merge(RepositoryId repoId, BranchName ours, BranchName theirs) {
-         RepositoryState state = requireState(repoId);
 
-         Branch oursBranch   = state.requireBranch(ours);
-         Branch theirsBranch = state.requireBranch(theirs);
+    // no merge-commit in a single function, we will keep it separate with individual endpoints
+    public MergeResult merge(RepositoryId repoId, BranchName ours, BranchName theirs) {
+        RepositoryState state = requireState(repoId);
 
-         CommitId oursHead   = oursBranch.headCommitId();
-         CommitId theirsHead = theirsBranch.headCommitId();
+        Branch oursBranch = state.requireBranch(ours);
+        Branch theirsBranch = state.requireBranch(theirs);
 
-         CommitId base = findBestCommonAncestor(repoId, oursHead, theirsHead);
+        CommitId oursHead = oursBranch.headCommitId();
+        CommitId theirsHead = theirsBranch.headCommitId();
 
-         JsonNode baseDoc   = state.requireSnapshot(state.requireCommit(base).snapshotHash()).document();
-         JsonNode oursDoc   = state.requireSnapshot(state.requireCommit(oursHead).snapshotHash()).document();
-         JsonNode theirsDoc = state.requireSnapshot(state.requireCommit(theirsHead).snapshotHash()).document();
-         return mergeEngine.merge(JsonPointer.compile(""),oursDoc,theirsDoc,baseDoc);
-     }
+        CommitId base = findBestCommonAncestor(repoId, oursHead, theirsHead);
+
+        JsonNode baseDoc = state.requireSnapshot(state.requireCommit(base).snapshotHash()).document();
+        JsonNode oursDoc = state.requireSnapshot(state.requireCommit(oursHead).snapshotHash()).document();
+        JsonNode theirsDoc = state.requireSnapshot(state.requireCommit(theirsHead).snapshotHash()).document();
+        return mergeEngine.merge(JsonPointer.compile(""), oursDoc, theirsDoc, baseDoc);
+    }
+
     /**
      * Commits a resolved merge. The target branch head MUST still be at
      * expectedTargetHead (CAS); otherwise StaleHeadException is thrown.
-     *
+     * <p>
      * This is called both from the no-conflict path (with the MergeSuccess
      * outcome) and from the resolution path (with the partial tree + resolutions
      * materialized into a single JsonNode).
@@ -411,6 +417,7 @@ public class RepoService {
                     author, message);
         }
     }
+
     public MergeReport mergeAndReport(RepositoryId repoId,
                                       BranchName source,
                                       BranchName target,

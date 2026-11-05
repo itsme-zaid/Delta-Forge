@@ -1,4 +1,3 @@
-
 # VCS Domain Model
 
 ## Entities and responsibilities

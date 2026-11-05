@@ -14,17 +14,18 @@ public class JsonDocumentServiceTest {
     private JsonDocumentService service;
 
     @BeforeEach
-    void setUp(){
+    void setUp() {
         mapper = JsonMapper.builder().build();
         service = new JsonDocumentService(mapper);
     }
 
     @Test
-    void structurallyEqual_treats_1_and_1_point_0_as_equal() throws Exception{
+    void structurallyEqual_treats_1_and_1_point_0_as_equal() throws Exception {
         JsonNode left = mapper.readTree("1");
         JsonNode right = mapper.readTree("1.00");
-        assertThat(service.structurallyEqual(left,right)).isTrue();
+        assertThat(service.structurallyEqual(left, right)).isTrue();
     }
+
     @Test
     void structurallyEqual_returnsFalse_forDifferentNumbers() throws Exception {
         JsonNode left = mapper.readTree("1");

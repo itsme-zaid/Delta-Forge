@@ -3,6 +3,7 @@
 ## Purpose
 
 One JSON shape for conflict reports, consumed by:
+
 - The CLI (Day 13 style, extended)
 - The REST API (Day 41)
 - The UI (Day 45)

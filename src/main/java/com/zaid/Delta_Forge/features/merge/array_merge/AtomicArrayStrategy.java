@@ -8,10 +8,10 @@ import tools.jackson.core.JsonPointer;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
-public class AtomicArrayStrategy implements ArrayMergeStrategy{
+public class AtomicArrayStrategy implements ArrayMergeStrategy {
     @Override
     public MergeResult merge(JsonNode base, JsonNode ours, JsonNode theirs, JsonPointer path) {
-    MergeEngine engine = new MergeEngine(new JsonDocumentService(JsonMapper.builder().build()));
+        MergeEngine engine = new MergeEngine(new JsonDocumentService(JsonMapper.builder().build()));
         return engine.mergePrimitive(
                 path,
                 ValueSlot.present(ours),

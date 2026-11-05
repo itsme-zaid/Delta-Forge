@@ -22,8 +22,9 @@ public class MergeInvariantsTest {
     JsonDocumentService service;
     MergeEngine engine;
     DiffEngine diffEngine;
+
     @BeforeProperty
-    public void set_up(){
+    public void set_up() {
         this.service = new JsonDocumentService(JsonMapper.builder().build());
         this.engine = new MergeEngine(service);
         this.diffEngine = new DiffEngineImpl(service);
@@ -37,6 +38,7 @@ public class MergeInvariantsTest {
             return obj;
         });
     }
+
     @Provide
     Arbitrary<ObjectNode> documents() {
         return Arbitraries.recursive(
@@ -45,6 +47,7 @@ public class MergeInvariantsTest {
                 1, 4
         );
     }
+
     @Property
     void only_theirs_changed_returns_theirs(@ForAll("documents") ObjectNode base,
                                             @ForAll("documents") ObjectNode theirs) {
@@ -56,20 +59,22 @@ public class MergeInvariantsTest {
 
     @Property
     void identical_docs_returns_the_same_doc(@ForAll("documents") ObjectNode base,
-                                            @ForAll("documents") ObjectNode theirs) {
+                                             @ForAll("documents") ObjectNode theirs) {
         // precondition: ours == base (only theirs changed)
         MergeResult r = engine.mergeObject(JsonPointer.compile(""), base, base, base);
         assertThat(((MergeResult.MergeSuccess) r).mergedOutcome())
                 .isEqualTo(ValueSlot.present(base));
     }
+
     @Property
     void only_base_changed_returns_base(@ForAll("documents") ObjectNode base,
-                                            @ForAll("documents") ObjectNode theirs) {
+                                        @ForAll("documents") ObjectNode theirs) {
         // precondition: ours == base (only theirs changed)
         MergeResult r = engine.mergeObject(JsonPointer.compile(""), theirs, base, base);
         assertThat(((MergeResult.MergeSuccess) r).mergedOutcome())
                 .isEqualTo(ValueSlot.present(base));
     }
+
     @Property
     void symmetrically_deterministic(@ForAll("documents") ObjectNode base,
                                      @ForAll("documents") ObjectNode theirs) {
@@ -79,14 +84,15 @@ public class MergeInvariantsTest {
         assertThat(r).isEqualTo(r2);
 
     }
-    @Property
-    void no_unrelated_path_is_modified(@ForAll("documents") ObjectNode base, @ForAll("documents") ObjectNode theirs){
-        MergeResult r = engine.mergeObject(JsonPointer.compile(""), base,base,theirs);
-        assertThat(r).isInstanceOf(MergeResult.MergeSuccess.class);
-        JsonNode  merged = (JsonNode)((ValueSlot.Present) ((MergeResult.MergeSuccess) r).mergedOutcome()).node();
-        List<DiffOperation> op_res = diffEngine.diff(base,merged);
 
-        List<DiffOperation> op_ini= diffEngine.diff(base,theirs);
+    @Property
+    void no_unrelated_path_is_modified(@ForAll("documents") ObjectNode base, @ForAll("documents") ObjectNode theirs) {
+        MergeResult r = engine.mergeObject(JsonPointer.compile(""), base, base, theirs);
+        assertThat(r).isInstanceOf(MergeResult.MergeSuccess.class);
+        JsonNode merged = (JsonNode) ((ValueSlot.Present) ((MergeResult.MergeSuccess) r).mergedOutcome()).node();
+        List<DiffOperation> op_res = diffEngine.diff(base, merged);
+
+        List<DiffOperation> op_ini = diffEngine.diff(base, theirs);
 
         assertThat(op_ini).extracting(DiffOperation::path).containsExactlyElementsOf(op_res.stream().map(DiffOperation::path).toList());
     }

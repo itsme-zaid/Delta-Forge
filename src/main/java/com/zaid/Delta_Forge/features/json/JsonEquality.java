@@ -4,7 +4,8 @@ import tools.jackson.databind.JsonNode;
 
 public final class JsonEquality {
 
-    private JsonEquality() {}
+    private JsonEquality() {
+    }
 
     public static boolean areEqual(JsonNode left, JsonNode right) {
         return left.equals(right);

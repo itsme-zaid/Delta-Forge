@@ -1,4 +1,5 @@
 package com.zaid.Delta_Forge.features.vcs_core.repository;
+
 import com.zaid.Delta_Forge.features.vcs_core.blob.Snapshot;
 import com.zaid.Delta_Forge.features.vcs_core.blob.SnapshotHash;
 import com.zaid.Delta_Forge.features.vcs_core.branch.Branch;
@@ -28,11 +29,13 @@ final class RepositoryState {
 //        if (c == null) throw new NoSuchElementException("commit not found: " + id);
         return c;
     }
+
     Snapshot requireSnapshot(SnapshotHash h) {
         Snapshot s = snapshots.get(h);
         if (s == null) throw new NoSuchElementException("snapshot not found: " + h);
         return s;
     }
+
     Branch requireBranch(BranchName name) {
         Branch b = branches.get(name);
         if (b == null) throw new NoSuchElementException("branch not found: " + name);

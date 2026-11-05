@@ -4,7 +4,8 @@ import tools.jackson.databind.JsonNode;
 
 public final class JsonTreeUtils {
 
-    private JsonTreeUtils() {}
+    private JsonTreeUtils() {
+    }
 
     public static ValueSlot getSlot(JsonNode object, String key) {
         JsonNode value = object.get(key);

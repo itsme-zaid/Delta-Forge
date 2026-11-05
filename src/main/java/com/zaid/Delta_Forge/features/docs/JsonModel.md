@@ -94,19 +94,19 @@ Equality and hashing must agree — this is non-negotiable, or
 Located at `src/test/resources/sample-json/`. Each file exists to exercise
 a specific decision or edge case:
 
-| File | What it exercises |
-|---|---|
-| `objects/nested.json` | D1 (order ignored), nested traversal |
-| `arrays/primitives.json` | D2 (order preserved) |
-| `arrays/of-objects.json` | D2 + entity-array discussion (Day 22) |
-| `edge-cases/null-and-missing.json` | D4 (null vs missing) |
-| `edge-cases/unicode-keys.json` | RFC 6901 escaping |
-| `edge-cases/large-numbers.json` | D5 (numeric policy) |
-| `edge-cases/duplicate-keys.json` | D3 (rejection) |
-| `edge-cases/valid-empty.json` | root `{}` |
-| `edge-cases/valid-null-root.json` | root `null` |
-| `edge-cases/root-array.json` | root array (not an object) |
-| `edge-cases/root-string.json` | root string |
+| File                               | What it exercises                     |
+|------------------------------------|---------------------------------------|
+| `objects/nested.json`              | D1 (order ignored), nested traversal  |
+| `arrays/primitives.json`           | D2 (order preserved)                  |
+| `arrays/of-objects.json`           | D2 + entity-array discussion (Day 22) |
+| `edge-cases/null-and-missing.json` | D4 (null vs missing)                  |
+| `edge-cases/unicode-keys.json`     | RFC 6901 escaping                     |
+| `edge-cases/large-numbers.json`    | D5 (numeric policy)                   |
+| `edge-cases/duplicate-keys.json`   | D3 (rejection)                        |
+| `edge-cases/valid-empty.json`      | root `{}`                             |
+| `edge-cases/valid-null-root.json`  | root `null`                           |
+| `edge-cases/root-array.json`       | root array (not an object)            |
+| `edge-cases/root-string.json`      | root string                           |
 
 ## Reading
 
@@ -122,4 +122,7 @@ a specific decision or edge case:
 - [ ] Enforced by canonicalization (Day 15)
 
 
-- <B>setAt policy:</B> Creates missing object parents recursively. Does not create missing array elements; array indices must be within bounds. This matches JSON Patch's add behavior for objects and avoids the ambiguity of "how many nulls to insert" for arrays. The Materializer (Day 10) always operates on a deep copy of the merged tree, so mutation is safe.
+- <B>setAt policy:</B> Creates missing object parents recursively. Does not create missing array elements; array indices
+  must be within bounds. This matches JSON Patch's add behavior for objects and avoids the ambiguity of "how many nulls
+  to insert" for arrays. The Materializer (Day 10) always operates on a deep copy of the merged tree, so mutation is
+  safe.

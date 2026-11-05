@@ -9,8 +9,11 @@ import java.util.Objects;
 
 public sealed interface ValueSlot permits ValueSlot.Missing, ValueSlot.Present {
 
-    record Missing() implements ValueSlot {}
-    JsonDocumentService jsonService= new JsonDocumentService(JsonMapper.builder().build());;
+    record Missing() implements ValueSlot {
+    }
+
+    JsonDocumentService jsonService = new JsonDocumentService(JsonMapper.builder().build());
+    ;
 
     record Present(JsonNode node) implements ValueSlot {
         public Present {
@@ -23,7 +26,9 @@ public sealed interface ValueSlot permits ValueSlot.Missing, ValueSlot.Present {
         }
     }
 
-    /** The singleton missing value. */
+    /**
+     * The singleton missing value.
+     */
     ValueSlot MISSING = new Missing();
 
     static ValueSlot missing() {

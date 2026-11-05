@@ -10,12 +10,13 @@ import org.springframework.context.annotation.Bean;
 @ConfigurationPropertiesScan
 
 public class DeltaForgeApplication {
-	@Bean
-	ApplicationRunner checkJsonLimits(JsonLimitProperties limits) {
-		return args -> System.out.println(limits);
-	}
-	public static void main(String[] args) {
-		SpringApplication.run(DeltaForgeApplication.class, args);
-	}
+    @Bean
+    ApplicationRunner checkJsonLimits(JsonLimitProperties limits) {
+        return args -> System.out.println(limits);
+    }
+
+    public static void main(String[] args) {
+        SpringApplication.run(DeltaForgeApplication.class, args);
+    }
 
 }

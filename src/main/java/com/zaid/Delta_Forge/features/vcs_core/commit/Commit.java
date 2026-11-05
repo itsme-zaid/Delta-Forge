@@ -32,7 +32,15 @@ public record Commit(
         }
     }
 
-    public boolean isMergeCommit() { return parents.size() == 2; }
-    public boolean isRootCommit()  { return parents.isEmpty(); }
-    public CommitId firstParent()  { return parents.getFirst(); }   // throws if empty
+    public boolean isMergeCommit() {
+        return parents.size() == 2;
+    }
+
+    public boolean isRootCommit() {
+        return parents.isEmpty();
+    }
+
+    public CommitId firstParent() {
+        return parents.getFirst();
+    }   // throws if empty
 }

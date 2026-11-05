@@ -19,10 +19,13 @@ import java.util.TreeSet;
 @Service
 public class MergeEngine {
     JsonDocumentService jsonService;
-    public MergeEngine(JsonDocumentService jsonService){
+
+    public MergeEngine(JsonDocumentService jsonService) {
         this.jsonService = jsonService;
     }
+
     AtomicArrayStrategy arrayStrategy = new AtomicArrayStrategy();
+
     private boolean equalsSlot(ValueSlot a, ValueSlot b) {
         return switch (a) {
             case ValueSlot.Missing() -> b instanceof ValueSlot.Missing;
@@ -31,8 +34,8 @@ public class MergeEngine {
         };
     }
 
-    public MergeResult merge(@NonNull JsonPointer path, @NonNull JsonNode ours,@NonNull JsonNode theirs,@NonNull JsonNode base){
-        MergeResult res = mergeNodes(path,ValueSlot.of(ours),ValueSlot.of(theirs),ValueSlot.of(base));
+    public MergeResult merge(@NonNull JsonPointer path, @NonNull JsonNode ours, @NonNull JsonNode theirs, @NonNull JsonNode base) {
+        MergeResult res = mergeNodes(path, ValueSlot.of(ours), ValueSlot.of(theirs), ValueSlot.of(base));
         return res;
     }
 
@@ -54,10 +57,11 @@ public class MergeEngine {
         return MergeResult.conflicted(null, List.of(
                 new MergeConflict(path, ours, theirs, base, kind)));
     }
+
     public MergeResult mergeObject(JsonPointer path,
-                                    ObjectNode base,
-                                    ObjectNode ours,
-                                    ObjectNode theirs) {
+                                   ObjectNode base,
+                                   ObjectNode ours,
+                                   ObjectNode theirs) {
 
         ObjectNode merged = JsonNodeFactory.instance.objectNode();
         List<MergeConflict> conflicts = new ArrayList<>();
@@ -75,7 +79,7 @@ public class MergeEngine {
             ValueSlot o = ValueSlot.of(ours.path(key));
             ValueSlot t = ValueSlot.of(theirs.path(key));
 
-            MergeResult childResult = mergeNodes(childPath, o,t,b);
+            MergeResult childResult = mergeNodes(childPath, o, t, b);
 
             if (childResult instanceof MergeResult.MergeSuccess s) {
                 // Resolved. Add to merged tree if present.
@@ -106,13 +110,14 @@ public class MergeEngine {
                 return mergeObject(path, (ObjectNode) bn, (ObjectNode) on, (ObjectNode) tn);
             }
             if (on.isArray() && tn.isArray() && bn.isArray()) {
-                return arrayStrategy.merge(bn,on,tn,path);
+                return arrayStrategy.merge(bn, on, tn, path);
             }
         }
         return mergePrimitive(path, o, t, b);
     }
+
     private ConflictType determineConflictType(ValueSlot ours, ValueSlot theirs) {
-        boolean oursMissing   = ours   instanceof ValueSlot.Missing;
+        boolean oursMissing = ours instanceof ValueSlot.Missing;
         boolean theirsMissing = theirs instanceof ValueSlot.Missing;
 
         // Delete-vs-edit: one side deleted, the other edited

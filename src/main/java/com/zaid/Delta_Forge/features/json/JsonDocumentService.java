@@ -1,4 +1,5 @@
 package com.zaid.Delta_Forge.features.json;
+
 import org.springframework.stereotype.Service;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
@@ -14,7 +15,7 @@ public class JsonDocumentService {
 
     private final JsonMapper mapper;
 
-    public JsonDocumentService(JsonMapper mapper){
+    public JsonDocumentService(JsonMapper mapper) {
         this.mapper = mapper;
     }
 
@@ -25,6 +26,7 @@ public class JsonDocumentService {
             throw new RuntimeException("Invalid JSON: " + e.getMessage(), e);
         }
     }
+
     // to make sure that 1 is equal to 1.0 ;;;
     private static final Comparator<JsonNode> NUMERIC_AWARE =
             (a, b) -> {
@@ -33,19 +35,21 @@ public class JsonDocumentService {
                     return a.decimalValue().compareTo(b.decimalValue());
                 }
                 return a.equals(b) ? 0 : -1;
-    };
+            };
 
     public boolean structurallyEqual(JsonNode left, JsonNode right) {
-        if(left.isNull() || right.isNull()){
+        if (left.isNull() || right.isNull()) {
             // if one of them is null we can just use the .equals provided by the JsonNode;
             return left.equals(right);
         }
 
         return left.equals(NUMERIC_AWARE, right);
     }
-    public JsonNode deepCopy(JsonNode node){
+
+    public JsonNode deepCopy(JsonNode node) {
         return node.deepCopy();
     }
+
     public String serialize(JsonNode node) {
         try {
             JsonMapper jsonMapper = JsonMapper.builder().enable(JsonNodeFeature.WRITE_PROPERTIES_SORTED).build();

@@ -7,6 +7,9 @@ public record CommitId(UUID value) {
     public CommitId {
         Objects.requireNonNull(value, "value");
     }
-    public static CommitId random() { return new CommitId(UUID.randomUUID()); }
+
+    public static CommitId random() {
+        return new CommitId(UUID.randomUUID());
+    }
 }
 
