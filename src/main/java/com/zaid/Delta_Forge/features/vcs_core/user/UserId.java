@@ -1,0 +1,14 @@
+package com.zaid.Delta_Forge.features.vcs_core.user;
+
+import java.util.Objects;
+import java.util.UUID;
+
+public record UserId(UUID value) {
+    public UserId{
+        Objects.requireNonNull(value, "value");
+    }
+
+    public static UserId random() {
+        return new UserId(UUID.randomUUID());
+    }
+}
