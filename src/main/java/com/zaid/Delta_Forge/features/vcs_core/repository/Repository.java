@@ -1,19 +1,27 @@
 package com.zaid.Delta_Forge.features.vcs_core.repository;
 
+import com.zaid.Delta_Forge.features.vcs_core.user.UserId;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.Table;
+import org.springframework.scheduling.support.SimpleTriggerContext;
+
 import java.time.Instant;
 import java.util.Objects;
 
+@Table("repositories")
 public record Repository(
-        RepositoryId id,
+        @Id RepositoryId id,
         String name,
-        String owner,
-        String defaultBranch,         // e.g. "main"
-        Instant createdAt
+        @Column("owner_id") UserId ownerId,
+        @Column("default_branch") String defaultBranch,         // e.g. "main"
+        String visibility,
+        @Column("created_at") Instant createdAt
 ) {
     public Repository {
         Objects.requireNonNull(id, "id");
         Objects.requireNonNull(name, "name");
-        Objects.requireNonNull(owner, "owner");
+        Objects.requireNonNull(ownerId, "ownerId");
         Objects.requireNonNull(defaultBranch, "defaultBranch");
         Objects.requireNonNull(createdAt, "createdAt");
         if (name.isBlank()) throw new IllegalArgumentException("name must not be blank");
