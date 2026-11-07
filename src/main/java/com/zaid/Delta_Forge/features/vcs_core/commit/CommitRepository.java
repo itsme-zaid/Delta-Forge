@@ -33,4 +33,35 @@ public interface CommitRepository extends CrudRepository<Commit,CommitId> {
         if (ids.isEmpty()) throw new NoSuchElementException("no root commit in repo " + repoId);
         return findById(new CommitId(ids.getFirst())).orElseThrow();
     }
+    @Query("""
+    WITH RECURSIVE
+      ours_anc(id) AS (
+        SELECT :oursId
+        UNION
+        SELECT cp.parent_id FROM commit_parents cp
+        JOIN ours_anc o ON cp.commit_id = o.id
+      ),
+      theirs_anc(id) AS (
+        SELECT :theirsId
+        UNION
+        SELECT cp.parent_id FROM commit_parents cp
+        JOIN theirs_anc t ON cp.commit_id = t.id
+      ),
+      common(id) AS (
+        SELECT id FROM ours_anc
+        INTERSECT
+        SELECT id FROM theirs_anc
+      )
+    SELECT c.id
+    FROM common c
+    WHERE NOT EXISTS (
+      SELECT 1
+      FROM common other
+      JOIN commit_parents cp ON cp.parent_id = c.id
+      WHERE other.id = cp.commit_id
+    )
+    """)
+    List<UUID> findBestCommonAncestorIds(@Param("oursId") UUID oursId,
+                                         @Param("theirsId") UUID theirsId);
+
 }
