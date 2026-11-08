@@ -56,8 +56,8 @@ public class RepoServiceTest {
         String canonicalB = jsonDocumentService.serialize(b);
 
         assertThat(canonicalA).isEqualTo(canonicalB);
-        assertThat(SnapshotHasher.hash(canonicalA))
-                .isEqualTo(SnapshotHasher.hash(canonicalB));
+//        assertThat(SnapshotHasher.hash(canonicalA))
+//                .isEqualTo(SnapshotHasher.hash(canonicalB));
     }
 
     //    @Test

@@ -10,7 +10,7 @@ import com.zaid.Delta_Forge.features.vcs_core.commit.CommitId;
 import java.util.*;
 
 /**
- * In-memory state for one repository.
+ * In-memory state for one repository
  * All state lives here; the service is stateless and operates on these.
  */
 final class RepositoryState {

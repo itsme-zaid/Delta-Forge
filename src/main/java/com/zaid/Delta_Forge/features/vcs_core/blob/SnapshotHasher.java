@@ -17,11 +17,19 @@ public class SnapshotHasher {
      * break deduplication: {"a":1,"b":2} and {"b":2,"a":1} would hash
      * differently even though they are the same document per D1.
      */
-    public static SnapshotHash hash(String canonicalJson) {
+    public static SnapshotHash hash(byte[] canonicalBytes) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hashBytes = digest.digest(canonicalJson.getBytes(StandardCharsets.UTF_8));
-            return new SnapshotHash(HexFormat.of().formatHex(hashBytes));
+            return new SnapshotHash(HexFormat.of().formatHex(digest.digest(canonicalBytes)));
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("SHA-256 not available", e);
+        }
+    }
+    public static SnapshotHash hash(String hex) {
+        byte[] canonicalBytes = hex.getBytes(StandardCharsets.UTF_8);
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            return new SnapshotHash(HexFormat.of().formatHex(digest.digest(canonicalBytes)));
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException("SHA-256 not available", e);
         }
