@@ -1,5 +1,5 @@
 CREATE TABLE snapshots (
-                           repository_id         UUID NOT NULL REFERENCES repositories(id),
+                           repository_id         UUID NOT NULL REFERENCES repositories(repository_id),
                            hash                  CHAR(64) NOT NULL,
                            document              JSONB NOT NULL,
                            canonical_bytes       BYTEA NOT NULL,

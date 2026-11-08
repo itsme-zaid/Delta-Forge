@@ -9,5 +9,5 @@ import java.util.UUID;
 
 @Component
 public class RepositoryIdToUUIDConverter implements Converter<RepositoryId, UUID> {
-    @Override public UUID convert(RepositoryId id) { return id.value(); }
+    @Override public UUID convert(RepositoryId id) { return id.repository_id(); }
 }

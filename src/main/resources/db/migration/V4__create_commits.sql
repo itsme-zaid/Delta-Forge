@@ -1,8 +1,8 @@
 CREATE TABLE commits (
-                         id              UUID PRIMARY KEY,
-                         repository_id   UUID NOT NULL REFERENCES repositories(id),
+                         commit_id              UUID PRIMARY KEY,
+                         repository_id   UUID NOT NULL REFERENCES repositories(repository_id),
                          snapshot_hash   CHAR(64) NOT NULL,
-                         author_id       UUID NOT NULL REFERENCES users(id),
+                         author_id       UUID NOT NULL REFERENCES users(user_id),
                          message         TEXT NOT NULL,
                          created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
                          FOREIGN KEY (repository_id, snapshot_hash)

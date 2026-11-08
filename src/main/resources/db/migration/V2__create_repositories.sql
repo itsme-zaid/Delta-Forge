@@ -1,9 +1,9 @@
 CREATE TABLE repositories (
-                              id             UUID PRIMARY KEY,
-                              owner_id       UUID NOT NULL REFERENCES users(id),
+                              repository_id             UUID PRIMARY KEY,
+                              user_id       UUID NOT NULL REFERENCES users(user_id),
                               name           TEXT NOT NULL,
                               default_branch TEXT NOT NULL,
                               visibility     TEXT NOT NULL DEFAULT 'public',
                               created_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
-                              UNIQUE (owner_id, name)
+                              UNIQUE (user_id, name)
 );

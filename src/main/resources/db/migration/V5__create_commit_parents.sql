@@ -1,6 +1,6 @@
 CREATE TABLE commit_parents (
-                                commit_id  UUID NOT NULL REFERENCES commits(id),
-                                parent_id  UUID NOT NULL REFERENCES commits(id),
+                                commit_id  UUID NOT NULL REFERENCES commits(commit_id),
+                                parent_id  UUID NOT NULL REFERENCES commits(commit_id),
                                 position   SMALLINT NOT NULL CHECK (position IN (0, 1)),
                                 PRIMARY KEY (commit_id, position)
 );
