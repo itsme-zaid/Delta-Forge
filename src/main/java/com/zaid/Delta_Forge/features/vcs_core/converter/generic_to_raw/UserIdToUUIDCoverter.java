@@ -8,5 +8,5 @@ import java.util.UUID;
 
 @Component
 public class UserIdToUUIDCoverter implements Converter<UserId, UUID> {
-    @Override public UUID convert(UserId id) { return id.value(); }
+    @Override public UUID convert(UserId id) { return id.user_id(); }
 }

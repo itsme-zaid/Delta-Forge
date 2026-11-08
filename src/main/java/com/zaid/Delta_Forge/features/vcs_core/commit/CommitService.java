@@ -88,7 +88,7 @@ public class CommitService {
         return commitRepository.findByIdAndRepositoryId(id,repoId).orElseThrow(()-> new RuntimeException("Invalid Commit Id"));
     }
     public CommitId findBestCommonAncestor(CommitId ours, CommitId theirs){
-        List<UUID> bestIds = commitRepository.findBestCommonAncestorIds(ours.value(),theirs.value());
+        List<UUID> bestIds = commitRepository.findBestCommonAncestorIds(ours.commit_id(),theirs.commit_id());
         if(bestIds.isEmpty()) throw new UnrelatedHistoriesException(ours,theirs);
         if(bestIds.size()>1) throw new UnsupportedHistoryException("criss cross merge: multiple best common ancestor" + bestIds) ;
         return new CommitId(bestIds.getFirst());

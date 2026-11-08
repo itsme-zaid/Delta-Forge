@@ -12,6 +12,7 @@ import com.zaid.Delta_Forge.features.vcs_core.commit.CommitRepository;
 import com.zaid.Delta_Forge.features.vcs_core.exceptions.RepositoryNotFoundException;
 import com.zaid.Delta_Forge.features.vcs_core.user.UserId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jdbc.core.JdbcAggregateTemplate;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.JsonNode;
 
@@ -20,20 +21,24 @@ import java.util.List;
 import java.util.UUID;
 
 @Service public class RepositoryService {
-    private final JsonDocumentService jsonService;
     @Autowired
     private RepositoryRepo repositoryRepo;
     @Autowired
     private CommitRepository commitRepository;
-    public RepositoryService(JsonDocumentService jsonService) {
-        this.jsonService = jsonService;
-    }
-    public Repository init(String repoName, String visibility, UserId ownerId){
-        Repository repo = new Repository(new RepositoryId(UUID.randomUUID()),repoName,ownerId,"main","public",Instant.now());
-        repositoryRepo.save(repo);
-        return repo;
+    private JdbcAggregateTemplate template;
+
+    public RepositoryService(JdbcAggregateTemplate template){
+        this.template = template;
     }
 
+    public Repository init(String repoName, String visibility, UserId ownerId){
+        Repository repo = new Repository(new RepositoryId(UUID.randomUUID()),repoName,ownerId,"main","public",Instant.now());
+        template.insert(repo);
+        return repo;
+    }
+    public Repository get(RepositoryId repositoryId){
+        return  repositoryRepo.findById(repositoryId).orElseThrow(()-> new RuntimeException("Repository not found"));
+    }
 
 
 }

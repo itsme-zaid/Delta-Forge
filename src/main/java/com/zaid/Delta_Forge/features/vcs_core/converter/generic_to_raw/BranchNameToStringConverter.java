@@ -8,5 +8,5 @@ import java.util.UUID;
 
 @Component
 public class BranchNameToStringConverter implements Converter<BranchName,String> {
-    @Override public String convert(BranchName name) { return name.value(); }
+    @Override public String convert(BranchName name) { return name.branch_name(); }
 }

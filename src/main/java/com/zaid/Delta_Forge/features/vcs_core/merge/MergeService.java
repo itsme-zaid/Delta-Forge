@@ -49,9 +49,9 @@ public class MergeService {
         CommitId oursHead = oursBranch.headCommitId();
         CommitId theirsHead = theirsBranch.headCommitId();
         CommitId base = commitService.findBestCommonAncestor(oursHead, theirsHead);
-        JsonNode baseDoc = snapshotService.findBySnapshotHash(commitService.getCommit(base, repoId).snapshotHash()).document();
-        JsonNode oursDoc = snapshotService.findBySnapshotHash(commitService.getCommit(oursBranch.headCommitId(), repoId).snapshotHash()).document();
-        JsonNode theirsDoc = snapshotService.findBySnapshotHash(commitService.getCommit(theirsBranch.headCommitId(), repoId).snapshotHash()).document();
+        JsonNode baseDoc = snapshotService.findBySnapshotHash(repoId,commitService.getCommit(base, repoId).snapshotHash()).document();
+        JsonNode oursDoc = snapshotService.findBySnapshotHash(repoId,commitService.getCommit(oursBranch.headCommitId(), repoId).snapshotHash()).document();
+        JsonNode theirsDoc = snapshotService.findBySnapshotHash(repoId,commitService.getCommit(theirsBranch.headCommitId(), repoId).snapshotHash()).document();
         return mergeEngine.merge(JsonPointer.compile(""), oursDoc, theirsDoc, baseDoc);
     }
 

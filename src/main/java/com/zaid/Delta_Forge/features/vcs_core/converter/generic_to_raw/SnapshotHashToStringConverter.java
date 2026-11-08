@@ -8,5 +8,5 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class SnapshotHashToStringConverter implements Converter<SnapshotHash,String> {
-    @Override public String convert(SnapshotHash s) { return s.hex(); }
+    @Override public String convert(SnapshotHash s) { return s.hash(); }
 }

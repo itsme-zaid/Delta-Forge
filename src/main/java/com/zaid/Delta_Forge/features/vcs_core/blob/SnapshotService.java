@@ -2,6 +2,7 @@ package com.zaid.Delta_Forge.features.vcs_core.blob;
 
 import com.zaid.Delta_Forge.features.json.JsonDocumentService;
 import com.zaid.Delta_Forge.features.merge.MergeEngine;
+import com.zaid.Delta_Forge.features.vcs_core.repository.RepositoryId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jdbc.core.JdbcAggregateTemplate;
 import org.springframework.stereotype.Service;
@@ -25,7 +26,7 @@ public class SnapshotService {
         SnapshotHash hash =SnapshotHasher.hash(canonicalBytes);
         return template.insert(new Snapshot(hash,document,"normalization-v1", Instant.now(),canonicalBytes));
     }
-    public Snapshot findBySnapshotHash(SnapshotHash snapshotHash){
-        return repo.findBySnapshotHash(snapshotHash).orElseThrow(()-> new RuntimeException("Invalid Snapshot hash"));
+    public Snapshot findBySnapshotHash(RepositoryId repositoryId,SnapshotHash snapshotHash){
+        return repo.findBySnapshotHash(repositoryId.repository_id(),snapshotHash.hash()).orElseThrow(()-> new RuntimeException("Invalid Snapshot hash"));
     }
 }

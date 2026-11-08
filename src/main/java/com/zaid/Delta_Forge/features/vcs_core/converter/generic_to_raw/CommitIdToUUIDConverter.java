@@ -8,5 +8,5 @@ import java.util.UUID;
 
 @Component
 public class CommitIdToUUIDConverter implements Converter<CommitId,UUID> {
-    @Override public UUID convert(CommitId id) { return id.value(); }
+    @Override public UUID convert(CommitId id) { return id.commit_id(); }
 }
