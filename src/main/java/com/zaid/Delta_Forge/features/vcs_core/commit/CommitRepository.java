@@ -29,7 +29,7 @@ public interface CommitRepository extends CrudRepository<Commit,CommitId> {
 
     // Step 2: load via findById to trigger parent loading
     default Commit findRootCommit(RepositoryId repoId) {
-        List<UUID> ids = findRootCommitIdsByRepo(repoId.value());
+        List<UUID> ids = findRootCommitIdsByRepo(repoId.repository_id());
         if (ids.isEmpty()) throw new NoSuchElementException("no root commit in repo " + repoId);
         return findById(new CommitId(ids.getFirst())).orElseThrow();
     }

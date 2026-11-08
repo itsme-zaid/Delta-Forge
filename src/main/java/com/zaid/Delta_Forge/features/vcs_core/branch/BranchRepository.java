@@ -25,6 +25,5 @@ public interface BranchRepository extends CrudRepository<Branch, UUID> {
                 @Param("branchName") String branchName,
                 @Param("expectedHead") UUID expectedHead,
                 @Param("newHead") UUID newHead);
-    Optional<Branch> findByRepositoryIdAndName(RepositoryId repositoryId, BranchName name);
-    List<Branch> findByRepositoryId(RepositoryId repositoryId);
+    Optional<Branch> findByRepositoryIdAndName(UUID repositoryId, String name);
 }
