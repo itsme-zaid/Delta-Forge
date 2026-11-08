@@ -3,8 +3,8 @@ package com.zaid.Delta_Forge.features.vcs_core.repository;
 import com.zaid.Delta_Forge.features.vcs_core.user.UserId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.Embedded;
 import org.springframework.data.relational.core.mapping.Table;
-import org.springframework.scheduling.support.SimpleTriggerContext;
 
 import java.time.Instant;
 import java.util.Objects;
@@ -13,7 +13,7 @@ import java.util.Objects;
 public record Repository(
         @Id RepositoryId id,
         String name,
-        @Column("owner_id") UserId ownerId,
+        @Embedded(onEmpty = Embedded.OnEmpty.USE_EMPTY) UserId ownerId,
         @Column("default_branch") String defaultBranch,         // e.g. "main"
         String visibility,
         @Column("created_at") Instant createdAt

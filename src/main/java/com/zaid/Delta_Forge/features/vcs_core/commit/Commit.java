@@ -5,6 +5,7 @@ import com.zaid.Delta_Forge.features.vcs_core.repository.RepositoryId;
 import com.zaid.Delta_Forge.features.vcs_core.user.UserId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.Embedded;
 import org.springframework.data.relational.core.mapping.MappedCollection;
 import org.springframework.data.relational.core.mapping.Table;
 
@@ -14,9 +15,9 @@ import java.util.Objects;
 @Table("commits")
 public record Commit(
         @Id CommitId id,
-        @Column("repository_id") RepositoryId repositoryId,
-        @Column("snapshot_hash") SnapshotHash snapshotHash,
-        @Column("author_id") UserId authorId,
+        @Embedded(onEmpty = Embedded.OnEmpty.USE_EMPTY) RepositoryId repositoryId,
+        @Embedded(onEmpty = Embedded.OnEmpty.USE_EMPTY) SnapshotHash snapshotHash,
+        @Embedded(onEmpty = Embedded.OnEmpty.USE_EMPTY) UserId authorId,
         @MappedCollection(idColumn = "commit_id", keyColumn = "position")
         List<CommitId> parents,
         String message,
