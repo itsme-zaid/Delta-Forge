@@ -3,9 +3,9 @@ package com.zaid.Delta_Forge.features.vcs_core.user;
 import java.util.Objects;
 import java.util.UUID;
 
-public record UserId(UUID value) {
+public record UserId(UUID user_id) {
     public UserId{
-        Objects.requireNonNull(value, "value");
+        Objects.requireNonNull(user_id, "value");
     }
 
     public static UserId random() {
