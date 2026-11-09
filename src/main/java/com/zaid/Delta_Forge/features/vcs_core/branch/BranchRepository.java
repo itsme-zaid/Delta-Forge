@@ -18,12 +18,16 @@ public interface BranchRepository extends CrudRepository<Branch, UUID> {
     UPDATE branches
     SET head_commit_id = :newHead, updated_at = now()
     WHERE repository_id = :repoId
-      AND name = :branchName
+      AND branch_name = :branchName
       AND head_commit_id = :expectedHead
     """)
     int casHead(@Param("repoId") UUID repoId,
                 @Param("branchName") String branchName,
                 @Param("expectedHead") UUID expectedHead,
                 @Param("newHead") UUID newHead);
-    Optional<Branch> findByRepositoryIdAndName(UUID repositoryId, String name);
+
+    @Query("SELECT * FROM branches WHERE repository_id = :repoId AND branch_name = :name")
+    Optional<Branch> findByRepositoryIdAndName(@Param("repoId") UUID repoId, @Param("name") String name);
+    @Query("SELECT * FROM branches WHERE repository_id = :repoId")
+    Optional<Branch> findByRepositoryId(@Param("repoId") UUID repoId);
 }
