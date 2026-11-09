@@ -2,21 +2,23 @@ package com.zaid.Delta_Forge.features.vcs_core.commit;
 
 import com.zaid.Delta_Forge.features.json.JsonDocumentService;
 import com.zaid.Delta_Forge.features.merge.MergeEngine;
+import com.zaid.Delta_Forge.features.vcs_core.blob.Snapshot;
 import com.zaid.Delta_Forge.features.vcs_core.blob.SnapshotHash;
 import com.zaid.Delta_Forge.features.vcs_core.blob.SnapshotHasher;
+import com.zaid.Delta_Forge.features.vcs_core.blob.SnapshotService;
 import com.zaid.Delta_Forge.features.vcs_core.branch.Branch;
 import com.zaid.Delta_Forge.features.vcs_core.branch.BranchName;
-import com.zaid.Delta_Forge.features.vcs_core.branch.BranchRepository;
 import com.zaid.Delta_Forge.features.vcs_core.branch.BranchService;
 import com.zaid.Delta_Forge.features.vcs_core.exceptions.UnrelatedHistoriesException;
 import com.zaid.Delta_Forge.features.vcs_core.exceptions.UnsupportedHistoryException;
-import com.zaid.Delta_Forge.features.vcs_core.repository.Repository;
 import com.zaid.Delta_Forge.features.vcs_core.repository.RepositoryId;
-import com.zaid.Delta_Forge.features.vcs_core.repository.RepositoryRepo;
 import com.zaid.Delta_Forge.features.vcs_core.user.UserId;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jdbc.core.JdbcAggregateTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.JsonNode;
 
 import java.time.Instant;
@@ -31,27 +33,33 @@ public class CommitService {
     private CommitRepository commitRepository;
     @Autowired
     private BranchService branchService;
+    @Autowired
+    private SnapshotService snapshotService;
     private final JdbcAggregateTemplate template;
+
+    private static final Logger log = LoggerFactory.getLogger(CommitService.class);
     public CommitService(JsonDocumentService jsonService, JdbcAggregateTemplate template){
         this.jsonService = jsonService;
         this.mergeEngine = new MergeEngine(jsonService);
         this.template = template;
     }
-    public Commit createCommit(RepositoryId repoId, SnapshotHash snapshotHash, List<CommitId> parents, UserId authorId, String message){
+    public Commit createCommit(RepositoryId repoId, SnapshotHash snapshotHash, UserId authorId, String message){
         // validate parents exists in this repo;
 
-        return new Commit(CommitId.random(),repoId,snapshotHash,authorId,parents,message, Instant.now());
+        return new Commit(CommitId.random(),repoId,snapshotHash,authorId,message, Instant.now());
     }
     public Commit createFirstCommit(RepositoryId repoId, BranchName branchName,
                                     JsonNode document, UserId authorId, String message) {
         // Called when the user commits the first document to an empty repo.
         // Creates the snapshot, the root commit, and the branch.
-        SnapshotHash hash = SnapshotHasher.hash(jsonService.serialize(document));
-        Commit rootCommit = createCommit(repoId,hash,List.of(),authorId,message);
+        Snapshot sn = snapshotService.saveSnapshot(repoId,document);
+        Commit rootCommit = createCommit(repoId,sn.hash(),authorId,message);
         Branch branch = new Branch(UUID.randomUUID(),repoId,branchName,rootCommit.id(),Instant.now(),Instant.now());
+        Commit commit = template.insert(rootCommit);
         branchService.save(branch);
-        return template.insert(rootCommit);
+        return commit;
     }
+    @Transactional
     public Commit commit(RepositoryId repoId,
                          BranchName branchName,
                          CommitId expectedHead,
@@ -59,18 +67,25 @@ public class CommitService {
                          UserId authorId,
                          String message) {
         Branch branch = branchService.findByRepoIdAndName(repoId, branchName);
-        synchronized (branch) {
+//        synchronized (branch) {
             if (!branch.headCommitId().equals(expectedHead)) {
                 throw new RuntimeException(
                         "branch " + branchName + " moved from " + expectedHead
                                 + " to " + branch.headCommitId());
 
             }
+//        }
+        Snapshot sn = snapshotService.saveSnapshot(repoId,document);
+        Commit commit = createCommit(repoId,sn.hash(),authorId,message);
+        log.atDebug().setMessage("expectedHead = " + expectedHead.commit_id() ).log();;
+        Commit c = template.insert(commit);
+
+        List<UUID> parents = List.of(expectedHead.commit_id());
+        for (int i = 0; i < parents.size(); i++) {
+            commitRepository.insertParent(commit.id().commit_id(), parents.get(i), i);
         }
-        SnapshotHash hash = SnapshotHasher.hash(jsonService.serialize(document));
-        Commit commit = createCommit(repoId,hash,List.of(expectedHead),authorId,message);
         branchService.casHead(repoId,branchName,expectedHead,commit.id());
-        return template.insert(commit);
+        return c;
     }
     public List<Commit> listCommits(RepositoryId repoId, BranchName branchName, int limit, int offset){
         // returning all the commits without any distinction
