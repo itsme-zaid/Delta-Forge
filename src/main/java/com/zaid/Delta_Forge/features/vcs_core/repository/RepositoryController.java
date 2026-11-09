@@ -37,7 +37,7 @@ public class RepositoryController {
 //        return repositoryService.list(owner).stream().map(this::toResponse).toList();
 //    }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{id}/get-repo")
     public RepositoryResponse get(@PathVariable UUID id) {
         return toResponse(repositoryService.get(new RepositoryId(id)));
     }
