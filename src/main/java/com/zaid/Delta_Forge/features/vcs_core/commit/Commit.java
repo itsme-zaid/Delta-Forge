@@ -12,14 +12,14 @@ import org.springframework.data.relational.core.mapping.Table;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
+
 @Table("commits")
 public record Commit(
         @Id CommitId id,
         @Embedded(onEmpty = Embedded.OnEmpty.USE_EMPTY) RepositoryId repositoryId,
-        @Embedded(onEmpty = Embedded.OnEmpty.USE_EMPTY) SnapshotHash snapshotHash,
+        @Embedded(onEmpty = Embedded.OnEmpty.USE_EMPTY, prefix = "snapshot_") SnapshotHash snapshotHash,
         @Embedded(onEmpty = Embedded.OnEmpty.USE_EMPTY) UserId authorId,
-        @MappedCollection(idColumn = "commit_id", keyColumn = "position")
-        List<CommitId> parents,
         String message,
         @Column("created_at") Instant createdAt
 ) {
@@ -30,24 +30,6 @@ public record Commit(
         Objects.requireNonNull(authorId, "authorId");
         Objects.requireNonNull(message, "message");
         Objects.requireNonNull(createdAt, "createdAt");
-        parents = List.copyOf(parents);
-        if (parents.size() > 2) {
-            throw new IllegalArgumentException("commit cannot have more than 2 parents");
-        }
-        if (parents.stream().anyMatch(p -> p.equals(id))) {
-            throw new IllegalArgumentException("commit cannot be its own parent");
-        }
-    }
 
-    public boolean isMergeCommit() {
-        return parents.size() == 2;
     }
-
-    public boolean isRootCommit() {
-        return parents.isEmpty();
-    }
-
-    public CommitId firstParent() {
-        return parents.getFirst();
-    }   // throws if empty
 }
