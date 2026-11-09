@@ -15,7 +15,7 @@ public record Branch(
         @Id UUID id,
         @Embedded(onEmpty = Embedded.OnEmpty.USE_EMPTY) RepositoryId repositoryId,
         @Embedded(onEmpty = Embedded.OnEmpty.USE_EMPTY) BranchName name,
-        @Embedded(onEmpty = Embedded.OnEmpty.USE_EMPTY) CommitId headCommitId,
+        @Embedded(onEmpty = Embedded.OnEmpty.USE_EMPTY, prefix = "head_") CommitId headCommitId,
         @Column("created_at") Instant createdAt,
         @Column("updated_at") Instant updatedAt
 ) {
