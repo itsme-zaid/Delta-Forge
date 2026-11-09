@@ -2,6 +2,7 @@ package com.zaid.Delta_Forge.features.vcs_core.commit;
 
 import com.zaid.Delta_Forge.features.vcs_core.repository.RepositoryId;
 import org.hibernate.validator.constraints.ParameterScriptAssert;
+import org.springframework.data.jdbc.repository.query.Modifying;
 import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
@@ -16,7 +17,14 @@ public interface CommitRepository extends CrudRepository<Commit,CommitId> {
     List<Commit> findByRepositoryIdOrderByCreatedAtDesc(RepositoryId repositoryId);
     Optional<Commit> findByIdAndRepositoryId(CommitId id, RepositoryId repositoryId);
     Boolean existsByIdAndRepositoryId(CommitId id, RepositoryId repositoryId);
-
+    @Modifying
+    @Query("""
+        INSERT INTO commit_parents (commit_id, parent_id, position)
+        VALUES (:commitId, :parentId, :position)
+        """)
+    void insertParent(@Param("commitId") UUID commitId,
+                      @Param("parentId") UUID parentId,
+                      @Param("position") int position);
     @Query("""
     SELECT c.id
     FROM commits c
