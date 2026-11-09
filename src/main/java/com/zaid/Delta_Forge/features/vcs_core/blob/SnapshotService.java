@@ -20,11 +20,13 @@ public class SnapshotService {
         this.jsonService = jsonService;
         this.template = template;
     }
-    public Snapshot saveSnapshot(JsonNode document){
+    public Snapshot saveSnapshot(RepositoryId repoID,JsonNode document){
+        if(document.isNull()) throw new RuntimeException("Null Document");
         String canonical = jsonService.serialize(document);
         byte[] canonicalBytes = canonical.getBytes(StandardCharsets.UTF_8);
         SnapshotHash hash =SnapshotHasher.hash(canonicalBytes);
-        return template.insert(new Snapshot(hash,document,"normalization-v1", Instant.now(),canonicalBytes));
+//        repo.insertSnapshot(repoID.repository_id(),hash);
+        return template.insert(new Snapshot(repoID,hash,document,"normalization-v1", Instant.now(),canonicalBytes));
     }
     public Snapshot findBySnapshotHash(RepositoryId repositoryId,SnapshotHash snapshotHash){
         return repo.findBySnapshotHash(repositoryId.repository_id(),snapshotHash.hash()).orElseThrow(()-> new RuntimeException("Invalid Snapshot hash"));

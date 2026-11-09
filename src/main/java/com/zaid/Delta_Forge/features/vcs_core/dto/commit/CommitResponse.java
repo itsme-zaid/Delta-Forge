@@ -10,6 +10,5 @@ public record CommitResponse(
         String snapshotHash,
         UUID authorId,
         String message,
-        Instant createdAt,
-        List<UUID> parentIds
+        Instant createdAt
 ) {}
