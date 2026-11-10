@@ -9,6 +9,7 @@ import org.springframework.data.jdbc.core.JdbcAggregateTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Service
@@ -37,7 +38,7 @@ public class BranchService {
         }
         Branch branch = new Branch(
                 UUID.randomUUID(), repoId, newBranchName,
-                fromCommitId, Instant.now(), Instant.now());
+                fromCommitId, OffsetDateTime.now(), OffsetDateTime.now());
         return template.insert(branch);
 //        return branch;
 

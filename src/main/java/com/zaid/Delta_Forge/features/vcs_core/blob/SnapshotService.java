@@ -1,7 +1,6 @@
 package com.zaid.Delta_Forge.features.vcs_core.blob;
 
 import com.zaid.Delta_Forge.features.json.JsonDocumentService;
-import com.zaid.Delta_Forge.features.merge.MergeEngine;
 import com.zaid.Delta_Forge.features.vcs_core.repository.RepositoryId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jdbc.core.JdbcAggregateTemplate;
@@ -9,7 +8,8 @@ import org.springframework.stereotype.Service;
 import tools.jackson.databind.JsonNode;
 
 import java.nio.charset.StandardCharsets;
-import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.util.Optional;
 
 @Service
 public class SnapshotService {
@@ -25,10 +25,14 @@ public class SnapshotService {
         String canonical = jsonService.serialize(document);
         byte[] canonicalBytes = canonical.getBytes(StandardCharsets.UTF_8);
         SnapshotHash hash =SnapshotHasher.hash(canonicalBytes);
+        Optional<Snapshot> existing = repo.findByRepoIdAndHash(repoID.repository_id(),hash.hash());
+        if(existing.isPresent()){
+            return existing.get();
+        }
 //        repo.insertSnapshot(repoID.repository_id(),hash);
-        return template.insert(new Snapshot(repoID,hash,document,"normalization-v1", Instant.now(),canonicalBytes));
+        return template.insert(new Snapshot(repoID,hash,document,"normalization-v1", OffsetDateTime.now(),canonicalBytes));
     }
     public Snapshot findBySnapshotHash(RepositoryId repositoryId,SnapshotHash snapshotHash){
-        return repo.findBySnapshotHash(repositoryId.repository_id(),snapshotHash.hash()).orElseThrow(()-> new RuntimeException("Invalid Snapshot hash"));
+        return repo.findByRepoIdAndHash(repositoryId.repository_id(),snapshotHash.hash()).orElseThrow(()-> new RuntimeException("Invalid Snapshot hash"));
     }
 }

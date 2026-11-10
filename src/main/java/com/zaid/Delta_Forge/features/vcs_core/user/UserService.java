@@ -10,6 +10,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -26,7 +27,7 @@ public class UserService {
         return repo.findByUsername(username);
     }
     public User saveNewUser(UserRequest userRequest){
-        User user = new User(new UserId(UUID.randomUUID()), userRequest.getUsername(),pswdEncoder.encode(userRequest.getPassword()), Instant.now());
+        User user = new User(new UserId(UUID.randomUUID()), userRequest.getUsername(),pswdEncoder.encode(userRequest.getPassword()), OffsetDateTime.now());
         try{
             template.insert(user);
         }catch (Exception e){

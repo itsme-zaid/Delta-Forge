@@ -11,7 +11,7 @@ import java.util.UUID;
 
 public interface SnapshotRepository extends CrudRepository<Snapshot,SnapshotHash> {
     @Query("SELECT * FROM snapshots WHERE repository_id = :repoId AND hash = :hash")
-    Optional<Snapshot> findBySnapshotHash(@Param("repoId") UUID repoId, @Param("hash") String hash);
+    Optional<Snapshot> findByRepoIdAndHash(@Param("repoId") UUID repoId, @Param("hash") String hash);
 
     @Modifying
     @Query("""

@@ -6,8 +6,8 @@ import jakarta.validation.constraints.NotNull;
 
 import java.util.UUID;
 
-public record MergeRequest(
-        @NotBlank String source,
-        @NotBlank String target,
+public record MergeRequestDto(
+        @NotBlank String source, //source branch
+        @NotBlank String target, // target branch
         @NotNull UUID expectedTargetHead
 ) {}

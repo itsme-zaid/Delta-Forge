@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import tools.jackson.databind.JsonNode;
 
 import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -32,7 +33,7 @@ import java.util.UUID;
     }
 
     public Repository init(String repoName, String visibility, UserId ownerId){
-        Repository repo = new Repository(new RepositoryId(UUID.randomUUID()),repoName,ownerId,"main","public",Instant.now());
+        Repository repo = new Repository(new RepositoryId(UUID.randomUUID()),repoName,ownerId,"main","public", OffsetDateTime.now());
         template.insert(repo);
         return repo;
     }

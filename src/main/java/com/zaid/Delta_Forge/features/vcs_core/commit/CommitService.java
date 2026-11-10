@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.JsonNode;
 
 import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -46,7 +47,7 @@ public class CommitService {
     public Commit createCommit(RepositoryId repoId, SnapshotHash snapshotHash, UserId authorId, String message){
         // validate parents exists in this repo;
 
-        return new Commit(CommitId.random(),repoId,snapshotHash,authorId,message, Instant.now());
+        return new Commit(CommitId.random(),repoId,snapshotHash,authorId,message, OffsetDateTime.now());
     }
     public Commit createFirstCommit(RepositoryId repoId, BranchName branchName,
                                     JsonNode document, UserId authorId, String message) {
@@ -54,7 +55,7 @@ public class CommitService {
         // Creates the snapshot, the root commit, and the branch.
         Snapshot sn = snapshotService.saveSnapshot(repoId,document);
         Commit rootCommit = createCommit(repoId,sn.hash(),authorId,message);
-        Branch branch = new Branch(UUID.randomUUID(),repoId,branchName,rootCommit.id(),Instant.now(),Instant.now());
+        Branch branch = new Branch(UUID.randomUUID(),repoId,branchName,rootCommit.id(),OffsetDateTime.now(),OffsetDateTime.now());
         Commit commit = template.insert(rootCommit);
         branchService.save(branch);
         return commit;
