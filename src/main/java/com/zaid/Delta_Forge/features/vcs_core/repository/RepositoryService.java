@@ -19,6 +19,7 @@ import tools.jackson.databind.JsonNode;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service public class RepositoryService {
@@ -31,9 +32,12 @@ import java.util.UUID;
     public RepositoryService(JdbcAggregateTemplate template){
         this.template = template;
     }
-
-    public Repository init(String repoName, String visibility, UserId ownerId){
-        Repository repo = new Repository(new RepositoryId(UUID.randomUUID()),repoName,ownerId,"main","public", OffsetDateTime.now());
+    public Repository getById(UUID repoId){
+        Optional<Repository> repo = repositoryRepo.findById(new RepositoryId(repoId));
+        return repo.orElse(null);
+    }
+    public Repository init(String repoName, String defaultBranch, String visibility, UserId ownerId){
+        Repository repo = new Repository(new RepositoryId(UUID.randomUUID()),repoName,ownerId,defaultBranch,visibility, OffsetDateTime.now());
         template.insert(repo);
         return repo;
     }

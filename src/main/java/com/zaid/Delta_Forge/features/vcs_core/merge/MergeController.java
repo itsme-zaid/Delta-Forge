@@ -7,6 +7,7 @@ import com.zaid.Delta_Forge.features.vcs_core.branch.Branch;
 import com.zaid.Delta_Forge.features.vcs_core.branch.BranchName;
 import com.zaid.Delta_Forge.features.vcs_core.branch.BranchService;
 import com.zaid.Delta_Forge.features.vcs_core.commit.CommitId;
+import com.zaid.Delta_Forge.features.vcs_core.dto.auth.AuthorizationService;
 import com.zaid.Delta_Forge.features.vcs_core.dto.branch.BranchResponse;
 import com.zaid.Delta_Forge.features.vcs_core.dto.branch.CreateBranchRequest;
 import com.zaid.Delta_Forge.features.vcs_core.dto.commit.CommitRequest;
@@ -20,6 +21,7 @@ import com.zaid.Delta_Forge.features.vcs_core.user.UserId;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -34,6 +36,8 @@ import java.util.UUID;
 @RequestMapping("/repositories/{repoId}/merge")
 public class MergeController {
     private final MergeService mergeService;
+    @Autowired
+    private AuthorizationService authorizationService;
 
     public MergeController(MergeService mergeService) { this.mergeService = mergeService; }
 
@@ -41,6 +45,7 @@ public class MergeController {
     public ResponseEntity<MergeResponse> merge(@PathVariable UUID repoId,
                                                @Valid @RequestBody MergeRequestDto req,
                                                @AuthenticationPrincipal CustomUserDetails userDetails) {
+        authorizationService.requireOwner(repoId,userDetails.getUserId());
         UserId author = new UserId(userDetails.getUserId());
         String source = req.source();
         String target = req.target();

@@ -16,7 +16,7 @@ public record Repository(
         String name,
         @Embedded(onEmpty = Embedded.OnEmpty.USE_EMPTY) UserId ownerId,
         @Column("default_branch") String defaultBranch,         // e.g. "main"
-        String visibility,
+        @Column("visibility") String visibility,
         @Column("created_at") OffsetDateTime createdAt
 ) {
     public Repository {

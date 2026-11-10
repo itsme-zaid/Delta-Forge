@@ -6,6 +6,7 @@ import com.zaid.Delta_Forge.features.vcs_core.branch.Branch;
 import com.zaid.Delta_Forge.features.vcs_core.branch.BranchName;
 import com.zaid.Delta_Forge.features.vcs_core.branch.BranchService;
 import com.zaid.Delta_Forge.features.vcs_core.commit.CommitId;
+import com.zaid.Delta_Forge.features.vcs_core.dto.auth.AuthorizationService;
 import com.zaid.Delta_Forge.features.vcs_core.dto.branch.BranchResponse;
 import com.zaid.Delta_Forge.features.vcs_core.dto.branch.CreateBranchRequest;
 import com.zaid.Delta_Forge.features.vcs_core.dto.commit.CommitRequest;
@@ -14,8 +15,10 @@ import com.zaid.Delta_Forge.features.vcs_core.dto.commit.FirstCommitRequest;
 import com.zaid.Delta_Forge.features.vcs_core.repository.RepositoryId;
 import com.zaid.Delta_Forge.features.vcs_core.user.UserId;
 import jakarta.validation.Valid;
+import org.flywaydb.core.api.output.errors.FaultToErrorObjectConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -34,13 +37,15 @@ public class CommitController {
         this.commitService = commitService;
         this.branchService = branchService;
     }
+    @Autowired
+    private AuthorizationService authorizationService;
     @PostMapping("/repositories/{repoId}/init-commit")
     @ResponseStatus(HttpStatus.CREATED)
     public CommitResponse firstCommit(@PathVariable UUID repoId,
                                  @Valid @RequestBody FirstCommitRequest req,
                                  @AuthenticationPrincipal CustomUserDetails auth) {
         UserId author = new UserId(auth.getUserId());
-
+        authorizationService.requireOwner(repoId,author.user_id());
         // 1. Insert commit (creates snapshot internally, validates parents)
         Commit c = commitService.createFirstCommit(new RepositoryId(repoId),new BranchName(req.branchName()),req.document(),new UserId(auth.getUserId()),req.message());
 
@@ -59,6 +64,7 @@ public class CommitController {
                                  @Valid @RequestBody CommitRequest req,
                                  @AuthenticationPrincipal CustomUserDetails auth) {
         UserId author = new UserId(auth.getUserId());
+        authorizationService.requireOwner(repoId,auth.getUserId());
         log.atDebug().setMessage("expectedHead = " + req.expectedHead()).log();
         // 1. Insert commit (creates snapshot internally, validates parents)
         Commit c = commitService.commit(
@@ -80,16 +86,18 @@ public class CommitController {
 
     @GetMapping("/repositories/{repoId}/get-commits")
     public List<Commit> history(@PathVariable UUID repoId,
-                                        @RequestParam String branch,
-                                        @RequestParam(defaultValue = "0")  int offset,
-                                        @RequestParam(defaultValue = "50") int limit) {
+                                @RequestParam String branch,
+                                @RequestParam(defaultValue = "0")  int offset,
+                                @RequestParam(defaultValue = "50") int limit, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        authorizationService.requireReadable(repoId,userDetails.getUserId());
 //        return commitService.listCommits(new RepositoryId(repoId), new BranchName(branch), limit, offset)
 //                .stream().map(s -> toResponse(s, branch)).toList();
         return commitService.listCommits(new RepositoryId(repoId),new BranchName(branch),10,0);
     }
 
     @GetMapping("/repositories/{repoId}/{headCommitId}")
-    public CommitResponse get(@PathVariable UUID repoId, @PathVariable UUID commitId) {
+    public CommitResponse get(@PathVariable UUID repoId, @PathVariable UUID commitId, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        authorizationService.requireReadable(repoId,userDetails.getUserId());
         Commit c = commitService.getCommit( new CommitId(commitId),new RepositoryId(repoId));
         return toResponse(c, null);
     }
