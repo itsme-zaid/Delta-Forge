@@ -8,6 +8,7 @@ import org.springframework.data.relational.core.mapping.Table;
 import tools.jackson.databind.JsonNode;
 
 import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.Objects;
 
 @Table("snapshots")
@@ -17,7 +18,7 @@ public record Snapshot(
         @Id SnapshotHash hash,
         @Column("document") JsonNode document,            // parsed tree
         @Column("normalization_version") String normalizationVersion,  // "normalization-v1"
-        @Column("normalization_version") Instant createdAt,
+        @Column("normalization_version") OffsetDateTime createdAt,
         @Column("canonical_bytes") byte[] canonicalBytes
 ) {
     public Snapshot {

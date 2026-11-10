@@ -1,5 +1,6 @@
 package com.zaid.Delta_Forge.features.vcs_core.dto.repo;
 import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 public record RepositoryResponse(
@@ -7,5 +8,5 @@ public record RepositoryResponse(
         String name,
         String defaultBranch,
         String visibility,
-        Instant createdAt
+        OffsetDateTime createdAt
 ) {}

@@ -6,11 +6,12 @@ import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.Instant;
+import java.time.OffsetDateTime;
 
 @Table("users")
 public record User(
         @Id UserId id,
-        String username,
+        @Column("username") String username,
         @Column("password_hash") String passwordHash,
-        @Column("created_at") Instant createdAt
+        @Column("created_at") OffsetDateTime createdAt
 ) {}

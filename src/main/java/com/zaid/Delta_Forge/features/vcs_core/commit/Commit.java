@@ -10,6 +10,7 @@ import org.springframework.data.relational.core.mapping.MappedCollection;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -21,7 +22,7 @@ public record Commit(
         @Embedded(onEmpty = Embedded.OnEmpty.USE_EMPTY, prefix = "snapshot_") SnapshotHash snapshotHash,
         @Embedded(onEmpty = Embedded.OnEmpty.USE_EMPTY) UserId authorId,
         String message,
-        @Column("created_at") Instant createdAt
+        @Column("created_at") OffsetDateTime createdAt
 ) {
     public Commit {
         Objects.requireNonNull(id, "id");

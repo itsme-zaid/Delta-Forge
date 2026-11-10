@@ -7,6 +7,7 @@ import org.springframework.data.relational.core.mapping.Embedded;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.Objects;
 
 @Table("repositories")
@@ -16,7 +17,7 @@ public record Repository(
         @Embedded(onEmpty = Embedded.OnEmpty.USE_EMPTY) UserId ownerId,
         @Column("default_branch") String defaultBranch,         // e.g. "main"
         String visibility,
-        @Column("created_at") Instant createdAt
+        @Column("created_at") OffsetDateTime createdAt
 ) {
     public Repository {
         Objects.requireNonNull(id, "id");
