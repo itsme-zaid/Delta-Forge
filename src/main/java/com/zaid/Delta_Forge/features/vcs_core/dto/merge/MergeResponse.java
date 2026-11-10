@@ -12,5 +12,6 @@ public record MergeResponse(
         UUID mergeCommitId,         // non-null iff status == "MERGED"
         JsonNode mergedDocument,    // non-null iff status == "MERGED"
         JsonNode partialTree,       // non-null iff status == "CONFLICTED"
-        List<ConflictDto> conflicts // non-null iff status == "CONFLICTED"
+        List<ConflictDto> conflicts,
+        UUID mergeRequestId// non-null iff status == "CONFLICTED"
 ) {}

@@ -5,6 +5,8 @@ import com.zaid.Delta_Forge.features.vcs_core.commit.CommitId;
 import tools.jackson.databind.JsonNode;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 
 public sealed interface MergeReport permits MergeReport.Merged, MergeReport.Conflicted {
 
@@ -24,8 +26,9 @@ public sealed interface MergeReport permits MergeReport.Merged, MergeReport.Conf
     record Merged(CommitId mergeCommitId, JsonNode mergedDocument) implements MergeReport {
     }
 
-    record Conflicted(JsonNode partialTree, List<MergeConflict> conflicts) implements MergeReport {
+    record Conflicted(UUID mergeRequestId, JsonNode partialTree, List<MergeConflict> conflicts) implements MergeReport {
         public Conflicted {
+            Objects.requireNonNull(mergeRequestId, "mergeRequestId");
             conflicts = List.copyOf(conflicts);
         }
     }
