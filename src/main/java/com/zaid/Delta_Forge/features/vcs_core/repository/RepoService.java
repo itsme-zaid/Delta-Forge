@@ -158,8 +158,8 @@ public class RepoService{
 //
 //    // CommitSummary DTO — new file
 //    // In RepositoryService, public — used by tests and by applyMerge's callers
-//    public Commit getCommitRecord(RepositoryId repoId, CommitId commitId) {
-//        return requireState(repoId).requireCommit(commitId);
+//    public Commit getCommitRecord(RepositoryId repoId, CommitId headCommitId) {
+//        return requireState(repoId).requireCommit(headCommitId);
 //    }
 //
 //    public List<CommitSummary> listCommits(RepositoryId repoId,
@@ -196,9 +196,9 @@ public class RepoService{
 //                .toList();
 //    }
 //
-//    public CommitSummary getCommit(RepositoryId repoId, CommitId commitId) {
+//    public CommitSummary getCommit(RepositoryId repoId, CommitId headCommitId) {
 //        RepositoryState state = requireState(repoId);
-//        Commit c = state.requireCommit(commitId);
+//        Commit c = state.requireCommit(headCommitId);
 //        Map<CommitId, List<String>> branchLabels = branchesByCommit(state);
 //        return new CommitSummary(
 //                c.id(), c.author(), c.message(), c.createdAt(),
