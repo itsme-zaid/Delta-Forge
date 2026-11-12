@@ -12,10 +12,12 @@ import com.zaid.Delta_Forge.features.vcs_core.ai.suggestion_provider.AiSuggestio
 import com.zaid.Delta_Forge.features.vcs_core.ai.validation.ConflictIds;
 import com.zaid.Delta_Forge.features.vcs_core.ai.validation.SuggestionValidator;
 import com.zaid.Delta_Forge.features.vcs_core.ai.validation.ValidationResult;
+import com.zaid.Delta_Forge.features.vcs_core.audit.AuditService;
 import com.zaid.Delta_Forge.features.vcs_core.dto.ConflictWithId;
 import com.zaid.Delta_Forge.features.vcs_core.merge.*;
 import com.zaid.Delta_Forge.features.vcs_core.merge.merge_request.MergeRequest;
 import com.zaid.Delta_Forge.features.vcs_core.merge.merge_request.MergeRequestService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jdbc.core.JdbcAggregateTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +28,7 @@ import tools.jackson.databind.ObjectMapper;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
@@ -39,7 +42,8 @@ public class AiSuggestionService {
     private final SuggestionValidator validator;
     private final ObjectMapper objectMapper;
     private final JdbcAggregateTemplate template;
-
+    @Autowired
+    private AuditService auditService;
     public AiSuggestionService(AiSuggestionRepository suggestionRepository,
                                ResolutionRepository resolutionRepository,
                                MergeRequestService mergeRequestService,
@@ -62,7 +66,7 @@ public class AiSuggestionService {
     public AiSuggestion suggest(UUID mergeRequestId, String conflictId) {
         MergeRequest mr = mergeRequestService.get(mergeRequestId);
         MergeConflict conflict = findConflict(mr, conflictId);
-
+        auditService.logSuggestionRequested(mergeRequestId, conflictId, providerName());
         ConflictContext ctx = buildContext(mr, conflict);
         Suggestion raw = provider.suggest(ctx);
 
@@ -75,6 +79,7 @@ public class AiSuggestionService {
                     "REJECTED", providerName(),
                     OffsetDateTime.now());
             template.insert(rejected);
+            auditService.logValidationFailed(mergeRequestId, conflictId, ((ValidationResult.Rejected) result).reason());
             return rejected;
         }
 
@@ -91,13 +96,13 @@ public class AiSuggestionService {
     @Transactional
     public Resolution accept(UUID suggestionId, String resolvedBy) {
         AiSuggestion s = requirePending(suggestionId);
-
         AiSuggestion accepted = new AiSuggestion(
                 s.id(), s.mergeRequestId(), s.conflictId(), s.action(),
                 s.proposedValue(), s.explanation(), "ACCEPTED", s.provider(),
                 s.createdAt());
         template.update(accepted);
 
+        auditService.logUserAction("USER_ACCEPTED", resolvedBy, s.mergeRequestId(), s.conflictId(), objectMapper.valueToTree(Map.of("suggestionId", s.id(), "action", s.action())));
         return persistResolution(s, s.proposedValue(), Resolution.ResolutionSource.AI_ACCEPTED, resolvedBy);
     }
 
@@ -112,7 +117,7 @@ public class AiSuggestionService {
                 newValue, s.explanation(), "EDITED", s.provider(),
                 s.createdAt());
         template.update(edited);
-
+        auditService.logUserAction("USER_EDITED", resolvedBy, s.mergeRequestId(), s.conflictId(), objectMapper.valueToTree(Map.of("suggestionId", s.id(), "originalAction", s.action(), "editedValue", newValue)));
         return persistResolution(s, newValue, Resolution.ResolutionSource.AI_EDITED, resolvedBy);
     }
 
@@ -127,7 +132,7 @@ public class AiSuggestionService {
                 s.proposedValue(), s.explanation(), "REJECTED", s.provider(),
                 s.createdAt());
         template.update(rejected);
-        // No Resolution is created. Conflict stays unresolved.
+        auditService.logUserAction("USER_REJECTED", resolvedBy, s.mergeRequestId(), s.conflictId(), objectMapper.valueToTree(Map.of("suggestionId", s.id(), "action", s.action())));
     }
 
     // ============ helpers ============
