@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.time.OffsetDateTime;
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -53,5 +55,9 @@ public class BranchService {
     }
     public int casHead(RepositoryId repoId,BranchName branchName,CommitId expectedHead, CommitId newHead){
         return repo.casHead(repoId.repository_id(), branchName.branch_name(),expectedHead.commit_id(),newHead.commit_id());
+    }
+
+    public List<Branch> listByRepo(RepositoryId repositoryId) {
+        return repo.findByRepositoryId(repositoryId.repository_id());
     }
 }

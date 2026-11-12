@@ -29,5 +29,5 @@ public interface BranchRepository extends CrudRepository<Branch, UUID> {
     @Query("SELECT * FROM branches WHERE repository_id = :repoId AND branch_name = :name")
     Optional<Branch> findByRepositoryIdAndName(@Param("repoId") UUID repoId, @Param("name") String name);
     @Query("SELECT * FROM branches WHERE repository_id = :repoId")
-    Optional<Branch> findByRepositoryId(@Param("repoId") UUID repoId);
+    List<Branch> findByRepositoryId(@Param("repoId") UUID repoId);
 }

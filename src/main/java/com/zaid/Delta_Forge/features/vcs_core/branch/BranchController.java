@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -32,11 +33,11 @@ public class BranchController {
         return toResponse(b);
     }
 
-//    @GetMapping
-//    public List<BranchResponse> list(@PathVariable UUID repoId) {
-//        return branchService.listByRepo(new RepositoryId(repoId)).stream()
-//                .map(this::toResponse).toList();
-//    }
+    @GetMapping
+    public List<BranchResponse> list(@PathVariable UUID repoId) {
+        return branchService.listByRepo(new RepositoryId(repoId)).stream()
+                .map(this::toResponse).toList();
+    }
 
     @GetMapping("/{name}")
     public BranchResponse get(@PathVariable UUID repoId, @PathVariable String name, @AuthenticationPrincipal CustomUserDetails userDetails) {
