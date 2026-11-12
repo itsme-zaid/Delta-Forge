@@ -45,5 +45,8 @@ import java.util.UUID;
         return  repositoryRepo.findById(repositoryId).orElseThrow(()-> new RuntimeException("Repository not found"));
     }
 
+    public List<Repository> list(UserId userId){
+        return repositoryRepo.findByUserId(userId.user_id());
+    }
 
 }

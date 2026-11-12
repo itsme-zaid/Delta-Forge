@@ -14,6 +14,7 @@ import com.zaid.Delta_Forge.features.vcs_core.commit.Commit;
 import com.zaid.Delta_Forge.features.vcs_core.commit.CommitId;
 import com.zaid.Delta_Forge.features.vcs_core.commit.CommitRepository;
 import com.zaid.Delta_Forge.features.vcs_core.commit.CommitService;
+import com.zaid.Delta_Forge.features.vcs_core.dto.ConflictWithId;
 import com.zaid.Delta_Forge.features.vcs_core.exceptions.StaleHeadException;
 import com.zaid.Delta_Forge.features.vcs_core.merge.merge_request.MergeRequest;
 import com.zaid.Delta_Forge.features.vcs_core.repository.RepositoryId;
@@ -80,6 +81,8 @@ public class MergeService {
             CommitId baseId = commitService.findBestCommonAncestor(
                     target.headCommitId(), source.headCommitId());
 
+            JsonNode conflictsJson = objectMapper.valueToTree(
+                    c.conflicts().stream().map(ConflictWithId::from).toList());
             MergeRequest mr = new MergeRequest(
                     UUID.randomUUID(),
                     repoId.repository_id(),
@@ -89,7 +92,7 @@ public class MergeService {
                     target.headCommitId().commit_id(),                // ours commit
                     source.headCommitId().commit_id(),                // theirs commit
                     c.partialMergedOutcome(),
-                    serializeConflicts(c.conflicts()),
+                    conflictsJson,
                     MergeRequestStatus.OPEN.name(),
                     0,
                     OffsetDateTime.now(),

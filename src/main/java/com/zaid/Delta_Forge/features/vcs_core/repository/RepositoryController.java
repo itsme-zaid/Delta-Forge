@@ -34,11 +34,11 @@ public class RepositoryController {
         return toResponse(repo);
     }
 
-//    @GetMapping
-//    public List<RepositoryResponse> list(Authentication auth) {
-//        UserId owner = ((CustomUserDetails) auth.getPrincipal()).getUserId();
-//        return repositoryService.list(owner).stream().map(this::toResponse).toList();
-//    }
+    @GetMapping
+    public List<RepositoryResponse> list(@AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        return repositoryService.list(new UserId(userDetails.getUserId())).stream().map(this::toResponse).toList();
+    }
 
     @GetMapping("/{id}/get-repo")
     public RepositoryResponse get(@PathVariable UUID id, @AuthenticationPrincipal CustomUserDetails userDetails) {
