@@ -90,7 +90,9 @@ public class CommitService {
     }
     public List<Commit> listCommits(RepositoryId repoId, BranchName branchName, int limit, int offset){
         // returning all the commits without any distinction
-        return commitRepository.findByRepositoryIdOrderByCreatedAtDesc(repoId);
+        Branch branch = branchService.findByRepoIdAndName(repoId, branchName);
+        UUID headId = branch.headCommitId().commit_id();
+        return commitRepository.findReachableFrom(headId, limit, offset);
     }
     public Commit findRoot(RepositoryId repoId, BranchName branchName){
         Branch b = branchService.findByRepoIdAndName(repoId,branchName);

@@ -72,4 +72,21 @@ public interface CommitRepository extends CrudRepository<Commit,CommitId> {
     List<UUID> findBestCommonAncestorIds(@Param("oursId") UUID oursId,
                                          @Param("theirsId") UUID theirsId);
 
+    @Query("""
+            WITH RECURSIVE reachable(id) AS (
+                SELECT :headId
+                UNION
+                SELECT cp.parent_id
+                FROM commit_parents cp
+                JOIN reachable r ON cp.commit_id = r.id
+            )
+            SELECT c.* FROM commits c
+            JOIN reachable r ON c.commit_id = r.id
+            ORDER BY c.created_at DESC
+            LIMIT :limit OFFSET :offset
+    """)
+    List<Commit> findReachableFrom(@Param("headId") UUID headId,
+                                   @Param("limit") int limit,
+                                   @Param("offset") int offset);
+
 }
