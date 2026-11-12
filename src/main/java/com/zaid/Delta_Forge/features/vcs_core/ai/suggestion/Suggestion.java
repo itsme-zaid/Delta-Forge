@@ -1,4 +1,4 @@
-package com.zaid.Delta_Forge.features.vcs_core.ai.Suggestion;
+package com.zaid.Delta_Forge.features.vcs_core.ai.suggestion;
 
 import org.springframework.ai.chat.metadata.Usage;
 import tools.jackson.databind.JsonNode;

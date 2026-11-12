@@ -1,14 +1,13 @@
 package com.zaid.Delta_Forge.features.vcs_core.ai.suggestion_provider;
 
 import com.zaid.Delta_Forge.features.vcs_core.ai.ConflictContext;
-import com.zaid.Delta_Forge.features.vcs_core.ai.Suggestion.Action;
-import com.zaid.Delta_Forge.features.vcs_core.ai.Suggestion.Suggestion;
+import com.zaid.Delta_Forge.features.vcs_core.ai.suggestion.Action;
+import com.zaid.Delta_Forge.features.vcs_core.ai.suggestion.Suggestion;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.stereotype.Component;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-@Component
 public class GeminiSuggestionProvider implements AiSuggestionProvider{
 
     private final ChatClient chatClient;
